@@ -1,3 +1,3 @@
 let inc x = x+1;;
 
-print_int "%d" (inc 10);;
+print_int (inc 10);;
