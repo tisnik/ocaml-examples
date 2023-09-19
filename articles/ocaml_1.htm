@@ -1,0 +1,898 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>Programovací jazyk OCaml</title>
+<meta name="Author" content="Pavel Tisnovsky" />
+<meta name="Generator" content="vim" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<style type="text/css">
+         body {color:#000000; background:#ffffff;}
+         h1  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#c00000; text-align:center; padding-left:1em}
+         h2  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#0000c0; padding-left:1em; text-align:left}
+         h3  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#c0c0c0; padding-left:1em; text-align:left}
+         h4  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#e0e0e0; padding-left:1em; text-align:left}
+         a   {font-family: arial, helvetica, sans-serif;}
+         li  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ol  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ul  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         p   {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify;}
+         pre {background:#e0e0e0}
+</style>
+</head>
+
+<body>
+
+<h1>Programovací jazyk OCaml</h1>
+
+<h3>Pavel Tišnovský</h3>
+
+<p></p>
+
+<h1>Úvodník</h1>
+
+<p>Jazyk F# není jediným programovacím jazykem z rodiny ML, který se používá v praxi. Setkat se můžeme i s jazykem OCaml, který se od F# v některých ohledech odlišuje. Jeho výhodou je čistší návrh, nevýhodou pak může být ekosystém tohoto jazyka, který nemusí obsahovat všechny potřebné knihovny.</p>
+
+
+
+<h2>Obsah</h2>
+
+<p><a href="#k01">1. Programovací jazyk OCaml</a></p>
+<p><a href="#k02">2. Instalace balíčku <strong>opam</strong></a></p>
+<p><a href="#k03">3. Inicializace prostředí přes správce <strong>opam</strong></a></p>
+<p><a href="#k04">4. Instalace interaktivního prostředí <strong>utop</strong></a></p>
+<p><a href="#k05">5. Přímá interakce s&nbsp;interpretrem jazyka OCaml</a></p>
+<p><a href="#k06">6. Využití interaktivního prostředí <strong>utop</strong></a></p>
+<p><a href="#k07">7. Základní základy programovacího jazyka OCaml</a></p>
+<p><a href="#k08">8. Tisk hodnot na terminál</a></p>
+<p><a href="#k09">9. Jak spustit program typu &bdquo;Hello, world!&ldquo;?</a></p>
+<p><a href="#k10">10. Definice funkce</a></p>
+<p><a href="#k11">11. Zavolání funkce</a></p>
+<p><a href="#k12">12. Anonymní funkce</a></p>
+<p><a href="#k13">13. Explicitní specifikace návratového typu funkcí</a></p>
+<p><a href="#k14">14. Nepřetížené operátory</a></p>
+<p><a href="#k15">15. Lokální symboly</a></p>
+<p><a href="#k16">16. Repositář s&nbsp;demonstračními příklady</a></p>
+<p><a href="#k17">17. Odkazy na Internetu</a></p>
+
+
+
+<p><a name="k01"></a></p>
+<h2 id="k01">1. Programovací jazyk OCaml</h2>
+
+<p><i>&bdquo;OCaml: the rehabilitation clinic for OO programmers.&ldquo;<br />
+Erik Meijer</i></p>
+
+<p>Na <a
+href="https://www.root.cz/clanky/funkcionalni-programovaci-jazyk-f/">úvodní
+článek o programovacím jazyku F#</a> dnes částečně navážeme, protože se
+seznámíme se základy jazyka OCaml, jenž je považován za předka jazyka F# (a
+současně za jazyk, kterého F# v&nbsp;některých ohledech nikdy nepředběhl).
+Samotný jazyk OCaml se vyvinul z&nbsp;programovacího jazyka nazvaného
+<i>Caml</i>, přičemž předchůdci OCamlu se jmenovali <i>Caml light</i> a <i>Caml
+special light</i>. Po přidání podpory pro objektově orientované programování
+vznikl jazyk se jménem <i>Objective Caml</i> neboli zkráceně <i>OCaml</i>
+(podrobnější historie byla zmíněna právě v&nbsp;článku o F#).</p>
+
+<p><div class="rs-tip-major">Poznámka: ve skutečnosti je objektově orientované
+programování v&nbsp;OCamlu realizováno jen jako &bdquo;povinný&ldquo; přídavný
+modul jazyka a vůbec ho není zapotřebí využít.</div></p>
+
+<a href="https://www.root.cz/obrazek/1103530/"><img src="https://i.iinfo.cz/images/698/ocaml1-1-prev.webp" class="image-1103530" width="370" height="102" data-prev-filename="https://i.iinfo.cz/images/698/ocaml1-1-prev.webp" data-prev-width="370" data-prev-height="102" data-large-filename="https://i.iinfo.cz/images/698/ocaml1-1-large.webp" data-large-width="720" data-large-height="198" alt="&#160;" title="Autor: tisnik + third party, podle licence: &lt;a href=&quot;http://en.wikipedia.org/wiki/Rights_Managed&quot;&gt;Rights Managed&lt;/a&gt;" /></a>
+<p><i>Obrázek 1: Logo jazyka OCaml. Jak jsme si již řekli v&nbsp;článku o F#,
+pokud zvíře míří doleva, jedná se o jazyk OCaml, pokud doprava, jde o
+Perl.</i></p>
+
+<p>V&nbsp;dnešním článku si nejdříve řekneme, jak se OCaml nainstaluje, jak se
+nastaví jeho interaktivní prostředí <i>utop</i> a taktéž se seznámíme se
+základy tohoto zajímavého a stále poněkud přehlíženého programovacího jazyka,
+včetně jedné významné odlišnosti oproti jazyku F# (jedná se o striktní oddělení
+operátorů pro jednotlivé datové typy).</p>
+
+
+
+<p><a name="k02"></a></p>
+<h2 id="k02">2. Instalace balíčku <strong>opam</strong></h2>
+
+<p>V&nbsp;navazujícím textu si řekneme, jakým způsobem je možné si nainstalovat
+nástroje nutné pro psaní aplikací v&nbsp;programovacím jazyku OCaml (ve
+skutečnosti si postupně doinstalujeme prakticky celý ekosystém OCamlu). Většinu
+potřebných základních balíčků pro vývoj v&nbsp;OCamlu většinou nalezneme přímo
+v&nbsp;repositářích distribuce Linuxu. Vhodné je nainstalovat si přímo balíček
+nazvaný <strong>opam</strong>, což je správce prostředí pro OCaml (tedy
+přibližně obdoba <i>pip+virtualenv</i>). Příkladem může být instalace balíčku
+<strong>opam</strong> na Ubuntu či Mintu:</p>
+
+<pre>
+$ <strong>sudo apt-get install opam</strong>
+</pre>
+
+<p>Povšimněte si, že se skutečně nejedná o minimalistickou instalaci, protože
+ekosystém OCamlu společně se závislostmi (mj.&nbsp;i C++) vyžaduje přibližně
+půl gigabajtu diskového prostoru:</p>
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following additional packages will be installed:
+  build-essential cpp-9 darcs g++ g++-9 gcc-9 gcc-9-base ledit libamd2 libasan5 libgcc-9-dev libglpk40 libncurses-dev libncurses5-dev libncurses6
+  libncursesw6 libstdc++-9-dev libtinfo6 mercurial mercurial-common ocaml ocaml-base ocaml-base-nox ocaml-compiler-libs ocaml-interp ocaml-man ocaml-nox
+  opam-doc opam-installer
+Suggested packages:
+  gcc-9-locales g++-multilib g++-9-multilib gcc-9-doc gcc-9-multilib libiodbc2-dev default-libmysqlclient-dev ncurses-doc libstdc++-9-doc kdiff3 | kdiff3-qt
+  | kompare | meld | tkcvs | mgdiff qct python-mysqldb python-openssl python-pygments wish ocaml-doc tuareg-mode
+The following NEW packages will be installed:
+  build-essential darcs g++ g++-9 ledit libamd2 libglpk40 libncurses-dev libncurses5-dev libstdc++-9-dev mercurial mercurial-common ocaml ocaml-base
+  ocaml-base-nox ocaml-compiler-libs ocaml-interp ocaml-man ocaml-nox opam opam-doc opam-installer
+The following packages will be upgraded:
+  cpp-9 gcc-9 gcc-9-base libasan5 libgcc-9-dev libncurses6 libncursesw6 libtinfo6
+8 upgraded, 22 newly installed, 0 to remove and 362 not upgraded.
+Need to get 127 MB of archives.
+After this operation, 478 MB of additional disk space will be used.
+</pre>
+
+<p>Po (doufejme, že úspěšném) dokončení instalace si vyzkoušejte, zda je možné
+spustit příkaz <strong>opam</strong>:</p>
+
+<pre>
+$ <strong>opam</strong>
+</pre>
+
+<p>Měla by se vypsat tato nápověda:</p>
+
+<pre>
+usage: opam [--version]
+            [--help]
+            &lt;command&gt; [&lt;args&gt;]
+&nbsp;
+The most commonly used opam commands are:
+    init         Initialize opam state, or set init options.
+    list         Display the list of available packages.
+    show         Display information about specific packages.
+    install      Install a list of packages.
+    remove       Remove a list of packages.
+    update       Update the list of available packages.
+    upgrade      Upgrade the installed package to latest version.
+    config       Display configuration options for packages.
+    repository   Manage opam repositories.
+    switch       Manage multiple installation prefixes.
+    pin          Pin a given package to a specific version or source.
+    admin        Tools for repository administrators
+&nbsp;
+See 'opam help &lt;command&gt;' for more information on a specific command.
+</pre>
+
+
+
+<p><a name="k03"></a></p>
+<h2 id="k03">3. Inicializace prostředí přes správce <strong>opam</strong></h2>
+
+<p>V&nbsp;dalším kroku provedeme inicializaci prostředí využívaného správcem
+<strong>opam</strong>. Jedná se o operaci, kterou je nutné provést pouze
+jedenkrát, takže i když se jedná o poměrně pomalou operaci (cca jedna až dvě
+minuty v&nbsp;závislosti na rychlosti připojení), nebude nutné tuto operaci
+opakovat:</p>
+
+<pre>
+$ <strong>opam init</strong>
+</pre>
+
+<p>Povšimněte si, že se v&nbsp;rámci inicializace stahují balíčky jazyka
+OCaml:</p>
+
+<pre>
+[NOTE] Will configure from built-in defaults.
+Checking for available remotes: rsync and local, git, mercurial, darcs. Perfect!
+&nbsp;
+&lt;&gt;&lt;&gt; Fetching repository information &gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;
+[default] Initialised
+&nbsp;
+A hook can be added to opam's init scripts to ensure that the shell remains in sync with the opam environment when they are loaded. Set that up? [y/N] <strong>n</strong>
+&nbsp;
+&lt;&gt;&lt;&gt; Creating initial switch (ocaml-system&gt;=4.02.3) &lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;
+&nbsp;
+&lt;&gt;&lt;&gt; Gathering sources &gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;
+&nbsp;
+&lt;&gt;&lt;&gt; Processing actions &lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;&lt;&gt;
+∗ installed base-bigarray.base
+∗ installed base-threads.base
+∗ installed base-unix.base
+∗ installed ocaml-system.4.08.1
+∗ installed ocaml-config.1
+∗ installed ocaml.4.08.1
+Done.
+# Run eval $(opam env) to update the current shell environment
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: poslední řádek, který je vypsán, je
+důležitý, protože nastaví všechny potřebné proměnné prostředí. Tento příklad
+(je proveden okamžitě) lze opakovat před každým &bdquo;sezením&ldquo;
+s&nbsp;jazykem OCaml.</div></p>
+
+
+
+<p><a name="k04"></a></p>
+<h2 id="k04">4. Instalace interaktivního prostředí <strong>utop</strong></h2>
+
+<p>Již v&nbsp;rámci předchozího kroku se nainstalovaly všechny nástroje
+<i>nutné</i> pro vývoj v&nbsp;jazyku OCaml, tedy jak interpret, tak i překladač
+do nativního kódu společně s&nbsp;překladačem do bajtkódu. Ovšem v&nbsp;praxi
+je výhodnější namísto standardního interpretru jazyka OCaml použít interaktivní
+prostředí nazvané <strong>utop</strong>. To již můžeme nainstalovat přímo přes
+správce balíčků <strong>opam</strong>, a to konkrétně následujícím
+způsobem:</p>
+
+<pre>
+$ <strong>opam install utop</strong>
+</pre>
+
+<p>Společně s&nbsp;<strong>utop</strong> se nainstaluje i celá řada dalších
+nástrojů a balíčků. S&nbsp;některými z&nbsp;nich (například s&nbsp;<i>dune</i>)
+se ještě později setkáme:</p>
+
+<pre>
+The following actions will be performed:
+  ∗ install dune              3.10.0 [required by utop]
+  ∗ install ocamlfind         1.9.6  [required by utop]
+  ∗ install ocamlbuild        0.14.2 [required by logs]
+  ∗ install trie              1.0.0  [required by mew]
+  ∗ install result            1.5    [required by zed]
+  ∗ install csexp             1.5.2  [required by dune-configurator]
+  ∗ install cppo              1.6.9  [required by utop]
+  ∗ install base-bytes        base   [required by ocplib-endian]
+  ∗ install uchar             0.0.2  [required by zed]
+  ∗ install topkg             1.0.7  [required by logs]
+  ∗ install mew               0.1.0  [required by mew_vi]
+  ∗ install dune-configurator 3.10.0 [required by lwt]
+  ∗ install ocplib-endian     1.2    [required by lwt]
+  ∗ install uutf              1.0.3  [required by zed]
+  ∗ install react             1.2.2  [required by utop]
+  ∗ install lwt               5.7.0  [required by utop]
+  ∗ install uucp              15.0.0 [required by zed]
+  ∗ install mew_vi            0.5.0  [required by lambda-term]
+  ∗ install lwt_react         1.2.0  [required by utop]
+  ∗ install logs              0.7.0  [required by utop]
+  ∗ install uuseg             15.0.0 [required by zed]
+  ∗ install zed               3.2.1  [required by utop]
+  ∗ install lambda-term       3.3.2  [required by utop]
+  ∗ install utop              2.12.1
+===== ∗ 24 =====
+&nbsp;
+∗ installed dune.3.10.0
+∗ installed csexp.1.5.2
+∗ installed cppo.1.6.9
+∗ installed result.1.5
+∗ installed trie.1.0.0
+∗ installed ocplib-endian.1.2
+∗ installed uuseg.15.0.0
+∗ installed mew.0.1.0
+∗ installed zed.3.2.1
+∗ installed mew_vi.0.5.0
+∗ installed dune-configurator.3.10.0
+∗ installed lwt.5.7.0
+∗ installed lwt_react.1.2.0
+∗ installed logs.0.7.0
+∗ installed lambda-term.3.3.2
+∗ installed utop.2.12.1
+Done.
+</pre>
+
+
+
+<p><a name="k05"></a></p>
+<h2 id="k05">5. Přímá interakce s&nbsp;interpretrem jazyka OCaml</h2>
+
+<p>Po instalaci OCamlu a nastavení jeho prostředí si můžeme spustit interpret
+tohoto programovacího jazyka. Je to snadné, protože postačuje použít
+následující příkaz:</p>
+
+<pre>
+$ <strong>ocaml</strong>
+</pre>
+
+<p>Na terminál by se měla vypsat aktuálně nainstalovaná verze, konkrétně:</p>
+
+<pre>
+        OCaml version 4.08.1
+</pre>
+
+<p>Znak # znamená výzvu (<i>prompt</i>), což znamená, že za tento znak můžeme
+zadávat jednotlivé příkazy (což jsou prakticky vždy <i>výrazy</i>), interpret
+je zpracuje, vyhodnotí a vypíše jejich výsledek. Pokusme se například o součet
+hodnot 1+1:</p>
+
+<pre>
+# <strong>1+1;;</strong>
+- : int = 2
+</pre>
+
+<p>Povšimněte si zejména toho, že výsledkem není pouze vypsaná <i>hodnota</i>,
+ale současně i její <i>typ</i>, a to vždy. V&nbsp;tomto ohledu je jazyk OCaml
+(resp.&nbsp;přesněji řečeno jeho interpret) velmi důsledný.</p>
+
+
+
+<p><a name="k06"></a></p>
+<h2 id="k06">6. Využití interaktivního prostředí <strong>utop</strong></h2>
+
+<p>V&nbsp;rámci <a href="#k04">čtvrté kapitoly</a> jsme si nainstalovali
+nástroj nazvaný <i>utop</i>, jehož použití je v&nbsp;naprosté většině případů
+příjemnější, než konverzace se standardním interpretrem jazyka OCaml.
+<i>utop</i> totiž používá zvýraznění jednotlivých typů zpráv, nabízí
+plnohodnotnou editaci na příkazovém řádku, zobrazuje seznam modulů atd. Nástroj
+<i>utop</i> se spustí jednoduše:</p>
+
+<pre>
+$ <strong>utop</strong>
+</pre>
+
+<p>Podívejme se nyní na to, jak vypadá jeho prostředí:</p>
+
+<img src="https://i.iinfo.cz/images/698/ocaml1-2.webp" class="image-1103531" width="642" height="219" alt="&#160;" title="Autor: tisnik + third party, podle licence: &lt;a href=&quot;http://en.wikipedia.org/wiki/Rights_Managed&quot;&gt;Rights Managed&lt;/a&gt;" />
+<p><i>Obrázek 2: Prostředí utop po svém spuštění. V&nbsp;horní části terminálu
+jsou zobrazeny uvítací zprávy, v&nbsp;prostřední části vidíme vstupní textové
+pole (víceřádkové) a na spodním okraji se zobrazuje seznam modulů (a po zápisu
+jména modulu se zobrazí jména funkcí a dalších symbolů z&nbsp;daného
+modulu).</i></p>
+
+<a href="https://www.root.cz/obrazek/1103532/"><img src="https://i.iinfo.cz/images/698/ocaml1-3-prev.webp" class="image-1103532" width="370" height="105" data-prev-filename="https://i.iinfo.cz/images/698/ocaml1-3-prev.webp" data-prev-width="370" data-prev-height="105" data-large-filename="https://i.iinfo.cz/images/698/ocaml1-3-large.webp" data-large-width="720" data-large-height="205" alt="&#160;" title="Autor: tisnik + third party, podle licence: &lt;a href=&quot;http://en.wikipedia.org/wiki/Rights_Managed&quot;&gt;Rights Managed&lt;/a&gt;" /></a>
+<p><i>Obrázek 3: Definice funkce a zavolání této funkce v&nbsp;prostředí
+utop.</i></p>
+
+<p><div class="rs-tip-major">Poznámka: v&nbsp;utop lze použít většinu známých
+klávesových zkratek, například Ctrl+A a Ctrl+E pro pohyb kurzoru, vyhledávání
+v&nbsp;historii přes Ctrl+R atd. atd.</div></p>
+
+
+
+<p><a name="k07"></a></p>
+<h2 id="k07">7. Základní základy programovacího jazyka OCaml</h2>
+
+<p>Podobně jako F#, patří i OCaml do rodiny funkcionálních programovacích
+jazyků, konkrétně do skupiny se silným typovým systémem (na rozdíl od LISPu či
+Clojure) a s&nbsp;podporou typové inference. Při popisu OCamlu se tedy budeme
+snažit soustředit se právě na tyto dva prvky jazyka &ndash; na způsob práce
+s&nbsp;funkcemi a práce s&nbsp;datovými typy. Dnes se seznámíme s&nbsp;těmi
+prvky OCamlu, které jsme si (v&nbsp;případě jazyka F#) popsali v&nbsp;již <a
+href="https://www.root.cz/clanky/funkcionalni-programovaci-jazyk-f/">zmíněném
+úvodním článku</a>. Ukážeme si tedy způsob definice funkce, odvození typu
+funkce a v&nbsp;neposlední řadě taktéž specifický přístup jazyka OCaml
+k&nbsp;rozeznání operací podle použitých operátorů.</p>
+
+
+
+<p><a name="k08"></a></p>
+<h2 id="k08">8. Tisk hodnot na terminál</h2>
+
+<p>Pro tisk nějaké hodnoty či hodnot na terminál nabízí programovací jazyk
+OCaml funkce, v&nbsp;jejichž názvu se již tradičně &ndash; ostatně podobně jako
+v&nbsp;naprosté většině ostatních programovacích jazyků &ndash; vyskytuje slovo
+<strong>print</strong>. Některé z&nbsp;těchto funkcí jsou umístěny ve výchozím
+<i>modulu</i>; jedná se například o funkci <strong>print_string</strong>,
+<strong>print_int</strong> atd. Program typu &bdquo;Hello, world!&ldquo; by
+tedy mohl v&nbsp;OCamlu vypadat následovně:</p>
+
+<pre>
+print_string "Hello, world!"
+</pre>
+
+<p>Další podobně koncipované funkce nalezneme v&nbsp;modulu nazvaném
+<strong>Printf</strong>. Jedná se zejména o funkci <strong>printf</strong>,
+která nabízí formátovaný výstup (známe z&nbsp;C, Javy atd. atd.). Vzhledem
+k&nbsp;tomu, že &bdquo;Hello, world!&ldquo; neobsahuje žádný formátovací znak,
+můžeme psát:</p>
+
+<pre>
+Printf.printf "Hello, world!"
+</pre>
+
+
+
+<p><a name="k09"></a></p>
+<h2 id="k09">9. Jak spustit program typu &bdquo;Hello, world!&ldquo;?</h2>
+
+<p>Prográmky ukázané <a href="#k08">v&nbsp;předchozí kapitole</a> lze spustit
+několika způsoby. Ukažme si některé základní způsoby, k&nbsp;dalším metodám se
+vrátíme později:</p>
+
+<ol>
+<li>Spustíme interpret příkazem <strong>ocaml</strong> a překopírujeme do něj zdrojový kód</li>
+<li>Spustíme interaktivní prostředí <strong>utop</strong> a překopírujeme do něj zdrojový kód</li>
+<li>Spustíme interpret, ovšem se zadáním skriptu, který se má použít: <strong>ocaml hello_world_1.ml</strong></li>
+<li>Dtto v&nbsp;případě prostředí <strong>utop</strong>: <strong>utop -init hello_worlld.ml</strong></li>
+<li>V&nbsp;interpretru i interaktivním prostředí můžeme použít příkaz <strong>#use "hello_world.ml"</strong></li>
+<li>A v&nbsp;neposlední řadě je možné program přeložit do nativního kódu příkazem <strong>ocamlc hello_world_1</strong> (k&nbsp;tomu se ještě vrátíme)</li>
+</ol>
+
+
+
+<p><a name="k10"></a></p>
+<h2 id="k10">10. Definice funkce</h2>
+
+<p>Jazyk OCaml patří do rodiny funkcionálních programovacích jazyků, jak již to
+ostatně částečně prozrazuje jeho jméno. A ve funkcionálních programovacích
+jazycích mají funkce stejně plnohodnotný význam, jako jakékoli jiné hodnoty.
+V&nbsp;jazyku OCaml je neanonymní funkce vytvořena stejně jako jakákoli jiná
+hodnota s&nbsp;využitím klíčového slova <strong>let</strong> (zatímco u jazyka
+ML se používalo klíčové slovo <strong>fun</strong>). Vyzkoušíme si to na
+definici funkce pojmenované <strong>inc</strong>, která bude mít jediný
+parametr nazvaný <strong>x</strong>. V&nbsp;těle funkce se vypočte výraz
+<strong>x+1</strong>, jehož výsledek je současně i návratovou hodnotou
+funkce:</p>
+
+<pre>
+let inc x = x + 1;;
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: dvojice středníků je důležitá
+v&nbsp;interpretru/utopu, protože ukončuje výraz.</div></p>
+
+<p>U této funkce je zajímavé především to, že jsme nikde neuvedli typ parametru
+ani typ návratové hodnoty a přesto jazyk OCaml korektně zjistil, že se jedná o
+funkci <i>int &rarr; int</i> (tedy jediným parametrem je celé číslo a
+návratovou hodnotou je taktéž celé číslo). Přitom se vychází z&nbsp;těla
+funkce, tedy z&nbsp;výrazu <strong>n+1</strong>, což je v&nbsp;jazyku OCaml
+striktně součet dvou celých čísel (zde navíc mnohem striktnější, než například
+v&nbsp;F#, kde jsou operátory přetížené).</p>
+
+
+
+<p><a name="k11"></a></p>
+<h2 id="k11">11. Zavolání funkce</h2>
+
+<p>Podívejme se nyní na způsob zavolání již definované funkce. Při samotném
+volání funkce se parametry nemusí psát do závorek, ani se nemusí oddělovat
+čárkami:</p>
+
+<pre>
+<strong>let inc x = x+1;;</strong>
+&nbsp;
+<strong>let y = inc 10;;</strong>
+</pre>
+
+<p>Ovšem pokud se funkce volá v&nbsp;pozici, že její výsledek je parametrem
+jiné funkce, závorkám se nevyhneme. Ovšem píšou se okolo celého vyhodnocovaného
+parametru &ndash; podvýrazu:</p>
+
+<pre>
+<strong>let inc x = x+1;;</strong>
+&nbsp;
+<strong>print_int "%d" (inc 10);;</strong>
+</pre>
+
+<p>Alternativní způsob, kdy voláme funkci <strong>Prinft.printf</strong>
+s&nbsp;dvojicí parametrů, by mohl vypadat takto:</p>
+
+<pre>
+<strong>let inc x = x+1;;</strong>
+&nbsp;
+<strong>Printf.printf "%d" (inc 10);;</strong>
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: tím jsme si současně ukázali, jak se
+volá funkce s&nbsp;více parametry &ndash; opět žádné závorky (až na případné
+podvýrazy), žádné čárky.</div></p>
+
+
+
+<p><a name="k12"></a></p>
+<h2 id="k12">12. Anonymní funkce</h2>
+
+<p>V&nbsp;jazyku OCaml taktéž existuje klíčové slovo <strong>fun</strong>,
+ovšem na rozdíl od jazyka ML (ze kterého OCaml vychází) se používá pro definici
+anonymních funkcí (známé lambda výrazy):</p>
+
+<pre>
+fun x -&gt; x + 1;;
+</pre>
+
+<p>Předchozí řádek zapsaný uživatelem vytvořil anonymní funkci (bez jména) a
+navázal ji na speciální symbol <strong>it</strong>, jenž vždy
+(v&nbsp;interaktivním prostředí) obsahuje výsledek posledního výrazu. To
+znamená, že anonymní funkci můžeme zavolat (a ihned poté ztratit odkaz na
+ni).</p>
+
+<p>Ve skutečnosti je definice klasické funkce ukázaná v&nbsp;předchozích
+kapitolách jen syntaktickým cukrem k&nbsp;plnému zápisu:</p>
+
+<pre>
+let inc = fun x -&gt; x+1;;
+&nbsp;
+Printf.printf "%d" (inc 2);;
+</pre>
+
+<p>nebo:</p>
+
+<pre>
+let add = fun x y -&gt; x+y;;
+&nbsp;
+Printf.printf "%d" (add 1 2);;
+</pre>
+
+<p>Což je vlastně ekvivalentní zápisu anonymní funkce v&nbsp;JavaScriptu
+s&nbsp;přiřazením výsledku do konstanty:</p>
+
+<pre>
+const add = function (x, y) {
+  return x + y;
+};
+</pre>
+
+<p>nebo možná ještě lépe (stále se nacházíme v&nbsp;peklu zvaném
+JavaScript):</p>
+
+<pre>
+let add = (x, y) =&gt; x + y;
+</pre>
+
+
+
+<p><a name="k13"></a></p>
+<h2 id="k13">13. Explicitní specifikace návratového typu u funkcí</h2>
+
+<p>U funkce <strong>inc</strong> v&nbsp;původním tvaru:</p>
+
+<pre>
+<strong>let inc x = x + 1;;</strong>
+</pre>
+
+<p>se typ jejího argumentu a taktéž i typ výsledné hodnoty odvodí na základě
+použitého operátoru.</p>
+
+<p>V&nbsp;případě potřeby je pochopitelně možné explicitně specifikovat typ
+argumentu či argumentů funkce, popř.&nbsp;můžeme zapsat typ návratové hodnoty.
+Syntaxe je v&nbsp;tomto případě jednoduchá &ndash; za jméno argumentu (či
+argumentů) se zapíše dvojtečka a za ní požadovaný datový typ, přičemž argument
+i typ musí být v&nbsp;závorce:</p>
+
+<pre>
+<strong>let inc (x:int) = x+1;;</strong>
+</pre>
+
+<p>Typ návratové hodnoty se píše pouze za dvojtečku; nyní již bez závorek.
+Například můžeme specifikovat, že typ argumentu <strong>x</strong> má být
+explicitně celočíselná hodnota:</p>
+
+<pre>
+<strong>let inc x:int = x + 1;;</strong>
+</pre>
+
+<p>Na rozdíl od programovacího jazyka F# však nemůžeme specifikovat typ
+argumentu jako <strong>float</strong>, protože se provádí celočíselné sčítání
+(operátor + není v&nbsp;OCamlu přetížený):</p>
+
+<pre>
+<strong>let inc x:float = x + 1;;</strong>
+</pre>
+
+<p>Zjištěná chyba ve výrazu <strong>x + 1</strong>:</p>
+
+<pre>
+Error: This expression has type int but an expression was expected of type float
+</pre>
+
+
+
+<p><a name="k14"></a></p>
+<h2 id="k14">14. Nepřetížené operátory</h2>
+
+<p>V&nbsp;jazyku OCaml (ale nikoli už v&nbsp;F#) se striktně rozlišuje mezi
+celočíselnými operátory a operátory pro hodnoty typu <i>float</i> (což dále
+zpřísňuje typovou kontrolu). Konkrétně to znamená, že pro typ <i>float</i> je
+za všemi základními aritmetickými operátory zapsaná tečka. Následující příklad
+je tedy nekorektní a OCaml (interpret i překladač) na chybu upozorní:</p>
+
+<pre>
+let inc x:float = x+1.0;;
+&nbsp;
+Printf.printf "%f" (inc 2.0);;
+</pre>
+
+<p>Korektní zápis vypadá následovně (povšimněte si, že voláme operátor +. a
+nikoli jen +):</p>
+
+<pre>
+let inc x:float = x+.1.0;;
+&nbsp;
+Printf.printf "%f" (inc 2.0);;
+</pre>
+
+
+
+<p><a name="k15"></a></p>
+<h2 id="k15">15. Lokální symboly</h2>
+
+<p>Na závěr dnešního článku se zmiňme ještě o jednom rozdílu mezi jazyky OCaml
+a F#. Oba jazyky umožňují definice lokálních symbolů (a tedy i prostředí
+navázaného na tyto symboly), ovšem OCaml vyžaduje použití klíčového slova
+<strong>in</strong> (v&nbsp;F# je situace složitější, protože tento jazyk
+umožňuje přepínání mezi více syntaxemi). Použití lokálního symbolu
+<strong>x</strong> při výpočtu hodnoty proměnné <strong>answer</strong> tedy
+může vypadat následovně:</p>
+
+<pre>
+let answer =
+        let x = 6 in
+        x*7;;
+&nbsp;
+Printf.printf "anwser=%d" answer
+</pre>
+
+<p>Podobně lze vytvořit více lokálních symbolů:</p>
+
+<pre>
+let answer =
+  let x = 6 in
+  let y = 7 in
+  x*y
+;;
+&nbsp;
+Printf.printf "anwser=%d" answer
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: třetí a čtvrtý řádek by měl být
+teoreticky odsazen, ovšem v&nbsp;reálných programech se setkáme
+s&nbsp;předchozím stylem odsazení.</div></p>
+
+
+
+<p><a name="k16"></a></p>
+<h2 id="k16">16. Repositář s&nbsp;demonstračními příklady</h2>
+
+<p>Všechny výše popsané demonstrační příklady byly uloženy do repositáře
+dostupného na adrese <a
+href="https://github.com/tisnik/ocaml-examples/">https://github.com/tisnik/ocaml-examples/</a>.
+V&nbsp;tabulce umístěné pod tímto odstavcem jsou uvedeny odkazy na tyto
+příklady:</p>
+
+<table>
+<tr><th> #</th><th>Příklad</th><th>Popis příkladu</th><th>Cesta</th></tr>
+<tr><td> 1</td><td>hello_world_1.ml</td><td>zavolání funkce <strong>print_string</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_1.ml</a></td></tr>
+<tr><td> 2</td><td>hello_world_2.ml</td><td>zavolání funkce <strong>printf.Printf</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td> 3</td><td>function.ml</td><td>definice funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/function.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/function.ml</a></td></tr>
+<tr><td> 4</td><td>lambda.ml</td><td>anonymní funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/lambda.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/lambda.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td> 5</td><td>function_type_1.ml</td><td>explicitní specifikace typu návratové hodnoty funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_1.ml</a></td></tr>
+<tr><td> 6</td><td>function_type_2.ml</td><td>explicitní specifikace typu návratové hodnoty funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td> 7</td><td>call_function_1.ml</td><td>definice jednoduché funkce s&nbsp;jejím zavoláním</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_1.ml</a></td></tr>
+<tr><td> 8</td><td>call_function_2.ml</td><td>definice jednoduché funkce s&nbsp;jejím zavoláním</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_2.ml</a></td></tr>
+<tr><td> 9</td><td>call_function_3.ml</td><td>použití operátoru <strong>+</strong> pro dvojici hodnot typu <strong>float</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_3.ml</a></td></tr>
+<tr><td>10</td><td>call_function_4.ml</td><td>použití operátoru <strong>+.</strong> pro dvojici hodnot typu <strong>float</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_4.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_4.ml</a></td></tr>
+<tr><td>11</td><td>call_function_5.ml</td><td>plná deklarace funkce bez syntaktického cukru</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_5.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_5.ml</a></td></tr>
+<tr><td>12</td><td>call_function_6.ml</td><td>plná deklarace funkce bez syntaktického cukru</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_6.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_6.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>13</td><td>local_binding_1.ml</td><td>definice lokálních symbolů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_1.ml</a></td></tr>
+<tr><td>14</td><td>local_binding_2.ml</td><td>definice lokálních symbolů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_2.ml</a></td></tr>
+</table>
+
+
+
+<p><a name="k17"></a></p>
+<h2 id="k17">17. Odkazy na Internetu</h2>
+
+<ol>
+
+<li>General-Purpose, Industrial-Strength, Expressive, and Safe<br />
+<a href="https://ocaml.org/">https://ocaml.org/</a>
+</li>
+
+<li>OCaml playground<br />
+<a href="https://ocaml.org/play">https://ocaml.org/play</a>
+</li>
+
+<li>Online Ocaml Compiler IDE<br />
+<a href="https://www.jdoodle.com/compile-ocaml-online/">https://www.jdoodle.com/compile-ocaml-online/</a>
+</li>
+
+<li>Get Started - OCaml<br />
+<a href="https://www.ocaml.org/docs">https://www.ocaml.org/docs</a>
+</li>
+
+<li>Get Up and Running With OCaml<br />
+<a href="https://www.ocaml.org/docs/up-and-running">https://www.ocaml.org/docs/up-and-running</a>
+</li>
+
+<li>Better OCaml (Online prostředí)<br />
+<a href="https://betterocaml.ml/?version=4.14.0">https://betterocaml.ml/?version=4.14.0</a>
+</li>
+
+<li>OCaml file extensions<br />
+<a href="https://blog.waleedkhan.name/ocaml-file-extensions/">https://blog.waleedkhan.name/ocaml-file-extensions/</a>
+</li>
+
+<li>First thoughts on Rust vs OCaml<br />
+<a href="https://blog.darklang.com/first-thoughts-on-rust-vs-ocaml/">https://blog.darklang.com/first-thoughts-on-rust-vs-ocaml/</a>
+</li>
+
+<li>Standard ML of New Jersey<br />
+<a href="https://www.smlnj.org/">https://www.smlnj.org/</a>
+</li>
+
+<li>Programming Languages: Standard ML - 1 (a navazující videa)<br />
+<a href="https://www.youtube.com/watch?v=2sqjUWGGzTo">https://www.youtube.com/watch?v=2sqjUWGGzTo</a>
+</li>
+
+<li>6 Excellent Free Books to Learn Standard ML<br />
+<a href="https://www.linuxlinks.com/excellent-free-books-learn-standard-ml/">https://www.linuxlinks.com/excellent-free-books-learn-standard-ml/</a>
+</li>
+
+<li>SOSML: The Online Interpreter for Standard ML<br />
+<a href="https://sosml.org/">https://sosml.org/</a>
+</li>
+
+<li>ML (Computer program language)<br />
+<a href="https://www.barnesandnoble.com/b/books/other-programming-languages/ml-computer-program-language/_/N-29Z8q8Zvy7">https://www.barnesandnoble.com/b/books/other-programming-languages/ml-computer-program-language/_/N-29Z8q8Zvy7</a>
+</li>
+
+<li>Strong Typing<br />
+<a href="https://perl.plover.com/yak/typing/notes.html">https://perl.plover.com/yak/typing/notes.html</a>
+</li>
+
+<li>What to know before debating type systems<br />
+<a href="http://blogs.perl.org/users/ovid/2010/08/what-to-know-before-debating-type-systems.html">http://blogs.perl.org/users/ovid/2010/08/what-to-know-before-debating-type-systems.html</a>
+</li>
+
+<li>Types, and Why You Should Care (Youtube)<br />
+<a href="https://www.youtube.com/watch?v=0arFPIQatCU">https://www.youtube.com/watch?v=0arFPIQatCU</a>
+</li>
+
+<li>DynamicTyping (Martin Fowler)<br />
+<a href="https://www.martinfowler.com/bliki/DynamicTyping.html">https://www.martinfowler.com/bliki/DynamicTyping.html</a>
+</li>
+
+<li>DomainSpecificLanguage (Martin Fowler)<br />
+<a href="https://www.martinfowler.com/bliki/DomainSpecificLanguage.html">https://www.martinfowler.com/bliki/DomainSpecificLanguage.html</a>
+</li>
+
+<li>Language Workbenches: The Killer-App for Domain Specific Languages?<br />
+<a href="https://www.martinfowler.com/articles/languageWorkbench.html">https://www.martinfowler.com/articles/languageWorkbench.html</a>
+</li>
+
+<li>Effective ML (Youtube)<br />
+<a href="https://www.youtube.com/watch?v=-J8YyfrSwTk">https://www.youtube.com/watch?v=-J8YyfrSwTk</a>
+</li>
+
+<li>Why OCaml (Youtube)<br />
+<a href="https://www.youtube.com/watch?v=v1CmGbOGb2I">https://www.youtube.com/watch?v=v1CmGbOGb2I</a>
+</li>
+
+<li>Try OCaml<br />
+<a href="https://try.ocaml.pro/">https://try.ocaml.pro/</a>
+</li>
+
+<li>CSE 341: Functions and patterns<br />
+<a href="https://courses.cs.washington.edu/courses/cse341/04wi/lectures/03-ml-functions.html">https://courses.cs.washington.edu/courses/cse341/04wi/lectures/03-ml-functions.html</a>
+</li>
+
+<li>Comparing Objective Caml and Standard ML<br />
+<a href="http://adam.chlipala.net/mlcomp/">http://adam.chlipala.net/mlcomp/</a>
+</li>
+
+<li>What are the key differences between Standard ML and OCaml?<br />
+<a href="https://www.quora.com/What-are-the-key-differences-between-Standard-ML-and-OCaml?share=1">https://www.quora.com/What-are-the-key-differences-between-Standard-ML-and-OCaml?share=1</a>
+</li>
+
+<li>Cheat Sheets (pro OCaml)<br />
+<a href="https://www.ocaml.org/docs/cheat_sheets.html">https://www.ocaml.org/docs/cheat_sheets.html</a>
+</li>
+
+<li>Think OCaml: How to Think Like a (Functional) Programmer<br />
+<a href="https://www.greenteapress.com/thinkocaml/thinkocaml.pdf">https://www.greenteapress.com/thinkocaml/thinkocaml.pdf</a>
+</li>
+
+<li>The OCaml Language Cheat Sheet<br />
+<a href="https://ocamlpro.github.io/ocaml-cheat-sheets/ocaml-lang.pdf">https://ocamlpro.github.io/ocaml-cheat-sheets/ocaml-lang.pdf</a>
+</li>
+
+<li>Syllabus (FAS CS51)<br />
+<a href="https://cs51.io/college/syllabus/">https://cs51.io/college/syllabus/</a>
+</li>
+
+<li>Abstraction and Design In Computation<br />
+<a href="http://book.cs51.io/">http://book.cs51.io/</a>
+</li>
+
+<li>Learn X in Y minutes Where X=Standard ML<br />
+<a href="https://learnxinyminutes.com/docs/standard-ml/">https://learnxinyminutes.com/docs/standard-ml/</a>
+</li>
+
+<li>CSE307 Online - Summer 2018: Principles of Programing Languages course<br />
+<a href="https://www3.cs.stonybrook.edu/~pfodor/courses/summer/cse307.html">https://www3.cs.stonybrook.edu/~pfodor/courses/summer/cse307.html</a>
+</li>
+
+<li>CSE307 Principles of Programming Languages course: SML part 1<br />
+<a href="https://www.youtube.com/watch?v=p1n0_PsM6hw">https://www.youtube.com/watch?v=p1n0_PsM6hw</a>
+</li>
+
+<li>CSE 307 &ndash; Principles of Programming Languages &ndash; SML<br />
+<a href="https://www3.cs.stonybrook.edu/~pfodor/courses/summer/CSE307/L01_SML.pdf">https://www3.cs.stonybrook.edu/~pfodor/courses/summer/CSE307/L01_SML.pdf</a>
+</li>
+
+<li>History of programming languages<br />
+<a href="https://devskiller.com/history-of-programming-languages/">https://devskiller.com/history-of-programming-languages/</a>
+</li>
+
+<li>History of programming languages (Wikipedia)<br />
+<a href="https://en.wikipedia.org/wiki/History_of_programming_languages">https://en.wikipedia.org/wiki/History_of_programming_languages</a>
+</li>
+
+<li>The Evolution Of Programming Languages<br />
+<a href="https://www.i-programmer.info/news/98-languages/8809-the-evolution-of-programming-languages.html">https://www.i-programmer.info/news/98-languages/8809-the-evolution-of-programming-languages.html</a>
+</li>
+
+<li>Evoluce programovacích jazyků<br />
+<a href="https://ccrma.stanford.edu/courses/250a-fall-2005/docs/ComputerLanguagesChart.png">https://ccrma.stanford.edu/courses/250a-fall-2005/docs/ComputerLanguagesChart.png</a>
+</li>
+
+<li>Currying<br />
+<a href="https://sw-samuraj.cz/2011/02/currying/">https://sw-samuraj.cz/2011/02/currying/</a>
+</li>
+
+<li>Currying (Wikipedia)<br />
+<a href="https://en.wikipedia.org/wiki/Currying">https://en.wikipedia.org/wiki/Currying</a>
+</li>
+
+<li>Currying (Haskell wiki)<br />
+<a href="https://wiki.haskell.org/Currying">https://wiki.haskell.org/Currying</a>
+</li>
+
+<li>Haskell Curry<br />
+<a href="https://en.wikipedia.org/wiki/Haskell_Curry">https://en.wikipedia.org/wiki/Haskell_Curry</a>
+</li>
+
+<li>Moses Schönfinkel<br />
+<a href="https://en.wikipedia.org/wiki/Moses_Sch%C3%B6nfinkel">https://en.wikipedia.org/wiki/Moses_Sch%C3%B6nfinkel</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 1)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-1-1f15e387e536">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-1-1f15e387e536</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 2)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-2-7005682cec4a">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-2-7005682cec4a</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 3)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-3-1b0fd14eb1a7">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-3-1b0fd14eb1a7</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 4)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-4-18fbe3ea9e49">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-4-18fbe3ea9e49</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 5)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-5-c70adc9cf56a">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-5-c70adc9cf56a</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 6)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-6-db502830403">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-6-db502830403</a>
+</li>
+
+<li>Python to OCaml: Retrospective<br />
+<a href="http://roscidus.com/blog/blog/2014/06/06/python-to-ocaml-retrospective/">http://roscidus.com/blog/blog/2014/06/06/python-to-ocaml-retrospective/</a>
+</li>
+
+<li>Why does Cambridge teach OCaml as the first programming language?<br />
+<a href="https://www.youtube.com/watch?v=6APBx0WsgeQ">https://www.youtube.com/watch?v=6APBx0WsgeQ</a>
+</li>
+
+<li>OCaml and 7 Things You Need To Know About It In 2021 | Functional Programming | Caml<br />
+<a href="https://www.youtube.com/watch?v=s0itOsgcf9Q">https://www.youtube.com/watch?v=s0itOsgcf9Q</a>
+</li>
+
+<li>OCaml 2021 - 25 years of OCaml<br />
+<a href="https://www.youtube.com/watch?v=-u_zKPXj6mw">https://www.youtube.com/watch?v=-u_zKPXj6mw</a>
+</li>
+
+</ol>
+
+
+
+<p></p><p></p>
+<p><small>Autor: <a href="http://www.fit.vutbr.cz/~tisnovpa">Pavel Tišnovský</a> &nbsp; 2023</small></p>
+</body>
+</html>
+
