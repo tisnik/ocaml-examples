@@ -7,3 +7,8 @@ and odd x =
   then false
   else even (x-1);;
 
+
+Printf.printf "%b" (even 1);;
+Printf.printf "%b" (even 2);;
+Printf.printf "%b" (even 3);;
+Printf.printf "%b" (even 4);;
