@@ -1,0 +1,3 @@
+(* Prázdný seznam *)
+
+let x = [];;
