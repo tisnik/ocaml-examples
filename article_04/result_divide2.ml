@@ -7,7 +7,7 @@ let divide (x:int) (y:int) =
 let print_result value =
     match value with
     | Ok(x) -> Printf.printf "%d\n" x
-    | Error(x) -> Printf.printf "hmm, dělení nulou\n"
+    | Error(error) -> Printf.printf "%s\n" error
 ;;
 
 print_result (divide 10 2);;
