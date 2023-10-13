@@ -1,7 +1,7 @@
 ## Content of `article_01` subdirectory
 
 Examples written in OCaml that are used in the following article:
-[]()
+[Programovací jazyk OCaml](https://www.root.cz/clanky/programovaci-jazyk-ocaml/)
 
 - call_function_1.ml
 - call_function_2.ml
