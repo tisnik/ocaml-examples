@@ -1,7 +1,7 @@
 ## Content of `article_02` subdirectory
 
 Examples written in OCaml that are used in the following article:
-[]()
+[Proměnné, funkce a datové typy v jazyku OCaml](https://www.root.cz/clanky/promenne-funkce-a-datove-typy-v-jazyku-ocaml/)
 
 - basic_binding.ml
 - equal_operator_1.ml
