@@ -1,0 +1,1593 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>Datové typy Option, Result a Array v programovacím jazyku OCaml</title>
+<meta name="Author" content="Pavel Tisnovsky" />
+<meta name="Generator" content="vim" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<style type="text/css">
+         body {color:#000000; background:#ffffff;}
+         h1  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#c00000; text-align:center; padding-left:1em}
+         h2  {font-family: arial, helvetica, sans-serif; color:#ffffff; background-color:#0000c0; padding-left:1em; text-align:left}
+         h3  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#c0c0c0; padding-left:1em; text-align:left}
+         h4  {font-family: arial, helvetica, sans-serif; color:#000000; background-color:#e0e0e0; padding-left:1em; text-align:left}
+         a   {font-family: arial, helvetica, sans-serif;}
+         li  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ol  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         ul  {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify; width:450px;}
+         p   {font-family: arial, helvetica, sans-serif; color:#000000; text-align:justify;}
+         pre {background:#e0e0e0}
+</style>
+</head>
+
+<body>
+
+<h1>Datové typy Option, Result a Array v programovacím jazyku OCaml</h1>
+
+<h3>Pavel Tišnovský</h3>
+
+<p></p>
+
+<h1>Úvodník</h1>
+
+<p>Na článek o datových typech Option, Result a Array v jazyku F# dnes navážeme. Ukážeme si, jak lze tytéž typy použít v OCamlu. Ovšem téma bude rozšířeno, protože si popíšeme sémantiku funkce bind a dokonce i tvorbu "infixové" funkce, která nám umožní vizuální zápis kolony (pipeline).</p>
+
+
+
+<h2>Obsah</h2>
+
+<p><a href="#k01">1. Datové typy Option, Result a Array v&nbsp;programovacím jazyku OCaml</a></p>
+<p><a href="#k02">2. Datový typ <strong>Option</strong></a></p>
+<p><a href="#k03">3. Pokus o přečtení hodnoty obalené typem <strong>Option</strong> a predikáty <strong>is_none</strong> a <strong>is_some</strong></a></p>
+<p><a href="#k04">4. Ekvivalence dvou obalených hodnot</a></p>
+<p><a href="#k05">5. Datový typ <strong>Option</strong> a pattern matching</a></p>
+<p><a href="#k06">6. Praktický příklad &ndash; hledání prvku v&nbsp;seznamu</a></p>
+<p><a href="#k07">7. Zřetězení volání funkcí, které si předávají hodnoty typu <strong>Option</strong> &ndash; neidiomatické řešení</a></p>
+<p><a href="#k08">8. Zřetězení volání funkcí, které si předávají hodnoty typu <strong>Option</strong> &ndash; řešení založené na <strong>bind</strong></a></p>
+<p><a href="#k09">9. Funkce <strong>Option.bind</strong> zapsaná formou infixového operátoru</a></p>
+<p><a href="#k10">10. Datový typ <strong>Result</strong></a></p>
+<p><a href="#k11">11. Praktický příklad &ndash; realizace funkce pro výpočet podílu dvou celočíselných hodnot</a></p>
+<p><a href="#k12">12. Zřetězení funkcí s&nbsp;využitím <strong>Result.bind</strong></a></p>
+<p><a href="#k13">13. Datový typ <strong>Array</strong></a></p>
+<p><a href="#k14">14. Konstrukce pole: výčet prvků, opakování hodnoty v&nbsp;poli</a></p>
+<p><a href="#k15">15. Konstrukce pole s&nbsp;výpočtem hodnot jeho prvků</a></p>
+<p><a href="#k16">16. Indexování prvků polí v&nbsp;jazyce OCaml</a></p>
+<p><a href="#k17">17. Modifikace (mutace) prvků pole</a></p>
+<p><a href="#k18">18. Repositář s&nbsp;demonstračními příklady</a></p>
+<p><a href="#k19">19. Odkazy na Internetu</a></p>
+
+
+
+<p><a name="k01"></a></p>
+<h2 id="k01">1. Datové typy Option, Result a Array v&nbsp;programovacím jazyku OCaml</h2>
+
+<p>Na tento týden vydaný <a
+href="https://www.root.cz/clanky/datove-typy-option-result-a-array-v-programovacim-jazyku-f/">článek
+o datových typech Option, Result a Array v&nbsp;programovacím jazyku F#</a>
+dnes navážeme, protože si řekneme, jak se tyto (naprosto stejně pojmenované)
+datové typy používají v&nbsp;programovacím jazyku OCaml. Díky tomu, že se již
+dnes nebudeme muset věnovat podrobnějšímu popisu chování (sémantiky a vlastně i
+syntaxe) těchto datových typů, budeme mít mnohem více prostoru pro demonstrační
+příklady i pro praktické způsoby použití. Týká se to například funkce
+<strong>bind</strong>, kterou najde v&nbsp;praxi využití pro zřetězení většího
+množství operací. U všech dále uvedených demonstračních příkladů bude navíc
+vypsána i vypočtená či zobrazená hodnota tak, jak je ji možné získat
+z&nbsp;interaktivního prostředí <i>utop</i> popř.&nbsp;z&nbsp;interaktivní
+webové stránky <a href="https://try.ocaml.pro/">https://try.ocaml.pro/</a>
+(všechny příklady byly v&nbsp;tomto prostředí ověřeny).</p>
+
+<p><div class="rs-tip-major">Poznámka: zpočátku, tj.&nbsp;v&nbsp;předchozích
+článcích, se nám mohlo zdát, že programovací jazyky OCaml a F# jsou prakticky
+totožné; pouze je nutné v&nbsp;OCamlu ukončovat příkazy dvojicí středníků.
+Některé rozdíly jsme již mohli vidět při práci se seznamy (rozdílné přístupy
+k&nbsp;hlavě a ocasu seznamu atd.) nebo u operátorů pro datový typ
+<strong>float</strong>. Ovšem ještě více rozdílů nalezneme při práci
+s&nbsp;poli, tedy s&nbsp;typem <strong>Array</strong>. Po sémantické stránce
+jsou pole v&nbsp;obou jazycích prakticky totožnými datovými typy, ovšem syntaxe
+práce s&nbsp;nimi je rozdílná. Týká se to například indexování prvků atd.
+&ndash; viz další text.</div></p>
+
+
+
+<p><a name="k02"></a></p>
+<h2 id="k02">2. Datový typ <strong>Option</strong></h2>
+
+<p>V&nbsp;programovacím jazyku OCaml se, ostatně naprosto stejně jako
+v&nbsp;jazyku F#, poměrně často používá datový typ nazvaný
+<strong>Option</strong>, a to ve chvílích, kdy je zapotřebí reprezentovat
+neznámou hodnotu, chybějící hodnotu (ovšem bez vyvolání výjimky), vytvořit
+funkci s&nbsp;volitelnými parametry či vytvořit typově bezpečnou obdobu
+odkazu.</p>
+
+<p>Definice datového typu <strong>Option</strong> vypadá v&nbsp;jazyce OCaml
+takto:</p>
+
+<pre>
+type 'a t = 'a option = 
+    | None
+    | Some of 'a
+</pre>
+
+<p>Naprosto stejně jako v&nbsp;jazyku F# i zde se jedná o výčtový typ
+s&nbsp;pouhými dvěma explicitně zapsanými hodnotami <strong>Some</strong> a
+<strong>None</strong>.</p>
+
+<p>Hodnota <strong>None</strong> se vytvoří následujícím způsobem:</p>
+
+<pre>
+let <strong>noAnswer</strong> = None;;
+</pre>
+
+<p>Interaktivní prostředí OCamlu si odvodí typ této proměnné následovně:</p>
+
+<pre>
+val noAnswer : 'a option = None
+</pre>
+
+<p>Obalení konkrétní hodnoty do struktury <strong>Option</strong> lze
+realizovat stejně jako v&nbsp;jazyku F#:</p>
+
+<pre>
+let <strong>maybeAnswer</strong> = Some 42;;
+</pre>
+
+<p>Povšimněte si, že překladač si v&nbsp;tomto případě správně odvodil, že se
+jedná o datový typ <strong>Option</strong> a obalenou hodnotou je celé číslo 42
+(což bude dále využito při typových inferencích):</p>
+
+<pre>
+val maybeAnswer : int option = Some 42
+</pre>
+
+<p>Můžeme si samozřejmě nechat obalit například i hodnotu typu řetězec:</p>
+
+<pre>
+let <strong>maybeHello</strong> = Some "Hello world";;
+</pre>
+
+<p>Výsledkem je proměnná tohoto typu:</p>
+
+<pre>
+val maybeHello : string option = Some "Hello world"
+</pre>
+
+<p>Ještě si pro úplnost ukažme nepatrně složitější příklad, v&nbsp;němž je
+použita n-tice:</p>
+
+<pre>
+let <strong>someTuple</strong> = Some (1, "foo", [1;2;3]);;
+</pre>
+
+<p>Typ proměnné odvozený překladačem vypadá takto:</p>
+
+<pre>
+val someTuple : (int * string * int list) option = Some (1, "foo", [1; 2; 3])
+</pre>
+
+<p>Jedná se sice o nepraktický příklad, ale nic nám nebrání v&nbsp;tom, abychom
+jednu hodnotu <strong>Option</strong> obalili do jiné hodnoty
+<strong>Option</strong>:</p>
+
+<pre>
+let <strong>ugh1</strong> = Some (Some 42);; 
+let <strong>ugh2</strong> = Some None;;
+</pre>
+
+<p>Příslušné otypované hodnoty, které jsme získali:</p>
+
+<pre>
+val ugh1 : int option option = Some (Some 42)
+val ugh2 : 'a option option = Some None
+</pre>
+
+
+
+<p><a name="k03"></a></p>
+<h2 id="k03">3. Pokus o přečtení hodnoty obalené typem <strong>Option</strong> a predikáty <strong>is_none</strong> a <strong>is_some</strong></h2>
+
+<p>Pro přečtení hodnoty, která je obalena typem <strong>Option</strong>, je
+možné v&nbsp;případě potřeby (ale nebude to příliš často) použít funkci
+nazvanou <strong>get</strong> z&nbsp;modulu <strong>Option</strong>.
+V&nbsp;případě, že se této funkci předá <strong>Some(hodnota)</strong>, vrátí
+se příslušná hodnota, pokud se ovšem naopak předá hodnota
+<strong>None</strong>, dojde k&nbsp;výjimce. Toho chování si můžeme velmi
+snadno ověřit:</p>
+
+<pre>
+let <strong>answer1</strong> = Some 42;;
+let <strong>answer2</strong> = None;;
+&nbsp;
+Option.get answer1;;
+Option.get answer2;;
+</pre>
+
+<p>Výsledkem bude v&nbsp;prvním případě hodnota 42 (se správným typem!), ve
+druhém případě vyhozená výjimka:</p>
+
+<pre>
+- : int = 42
+&nbsp;
+Exception: (Invalid_argument "option is None")
+</pre>
+
+<p>V&nbsp;článku o jazyku F# jsme si řekli, že pro hodnoty typu
+<strong>Option(typ)</strong> jsou definovány i atributy (přesněji řečeno
+predikáty zapisované formou atributů), které nám umožní otestovat, zda
+pracujeme s&nbsp;hodnotou <strong>Some(typ)</strong> nebo
+<strong>None</strong>. Tyto atributy se jmenují <strong>IsNone</strong> a
+<strong>IsSome</strong> a vždy jeden z&nbsp;nich obsahuje hodnotu
+<strong>true</strong> a druhý (logicky) hodnotu <strong>false</strong>. Jejich
+použití je snadné (a typicky neidiomatické!).</p>
+
+<pre>
+let <strong>maybeAnswer</strong> = None
+&nbsp;
+printf "IsNone: %b" maybeAnswer.IsNone
+printf "IsSome: %b" maybeAnswer.IsSome
+&nbsp;
+&nbsp;
+let <strong>maybeAnswer</strong> = Some 42
+&nbsp;
+printf "IsNone: %b" maybeAnswer.IsNone
+printf "IsSome: %b" maybeAnswer.IsSome
+</pre>
+
+<p>V&nbsp;programovacím jazyku OCaml není nutné vymýšlet novou sémantiku,
+protože programátor má k&nbsp;dispozici skutečné <i>predikáty</i>, tedy funkce,
+které vrací na základě svého parametru hodnotu <strong>true</strong> či
+<strong>false</strong>. Tyto predikáty se &ndash; nepřekvapivě &ndash; jmenují
+<strong>is_none</strong> a <strong>is_some</strong>; podobně jako
+<strong>get</strong> je nalezneme v&nbsp;balíčku <strong>Option</strong>:</p>
+
+<pre>
+let <strong>answer1</strong> = Some 42;;
+let <strong>answer2</strong> = None;;
+&nbsp;
+Option.is_none answer1;;
+Option.is_some answer1;;
+Option.is_none answer2;;
+Option.is_some answer2;;
+</pre>
+
+<p>Výsledkem bude postupně čtveřice hodnot</p>
+
+<pre>
+- : bool = false
+- : bool = true
+- : bool = true
+- : bool = false
+</pre>
+
+
+
+<p><a name="k04"></a></p>
+<h2 id="k04">4. Ekvivalence dvou obalených hodnot</h2>
+
+<p>V&nbsp;některých algoritmech se setkáme s&nbsp;potřebou zjistit, zda jsou
+dvě (potenciálně) obalené hodnoty ekvivalentní. K&nbsp;tomuto účelu se
+v&nbsp;praxi používá funkce (a to dokonce funkce vyššího řádu) nazvaná
+<strong>equal</strong>, kterou opět nalezneme v&nbsp;modulu
+<strong>Option</strong>. Jak tato funkce vlastně pracuje? Mohou nastat tři
+případy:</p>
+
+<ol>
+<li>Pokud jsou obě vstupní hodnoty <strong>None</strong>, je výsledkem <strong>true</strong></li>
+<li>Pokud jsou obě vstupní hodnoty <strong>Some(x)</strong> a <strong>Some(y)</strong>, vrátí se výsledek porovnání <strong>eq x y</strong>, kde funkci <strong>eq</strong> je nutné dodat (viz demonstrační příklad)</li>
+<li>Ve všech ostatních případech (porovnání <strong>None</strong> a <strong>Some(x)</strong>) nebo pokud x!=y, se vrátí hodnota <strong>false</strong></li>
+</ol>
+
+<p>Podívejme se na následující demonstrační příklad, z&nbsp;něhož by mělo být
+chování funkce <strong>Option.equal</strong> zřejmé:</p>
+
+<pre>
+let <strong>answer1</strong> = Some 42;;
+let <strong>answer2</strong> = Some 42;;
+let <strong>answer3</strong> = Some 0;;
+let <strong>answer4</strong> = None;;
+let <strong>answer5</strong> = None;;
+&nbsp;
+let <strong>int_equal</strong> x y =
+  x = y;;
+&nbsp;
+Option.equal int_equal answer1 answer2;;
+Option.equal int_equal answer1 answer3;;
+Option.equal int_equal answer1 answer4;;
+Option.equal int_equal answer1 answer5;;
+Option.equal int_equal answer2 answer3;;
+Option.equal int_equal answer2 answer4;;
+Option.equal int_equal answer2 answer5;;
+Option.equal int_equal answer3 answer4;;
+Option.equal int_equal answer3 answer5;;
+Option.equal int_equal answer4 answer5;;
+</pre>
+
+<p>Výsledky ukazují, že výše uvedené předpoklady platí:</p>
+
+<pre>
+<i>Option.equal int_equal answer1 answer2 ;;</i>
+- : bool = true
+&nbsp;
+<i>Option.equal int_equal answer1 answer3 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer1 answer4 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer1 answer5 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer2 answer3 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer2 answer4 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer2 answer5 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer3 answer4 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer3 answer5 ;;</i>
+- : bool = false
+&nbsp;
+<i>Option.equal int_equal answer4 answer5 ;;</i>
+- : bool = true
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: ve skutečnosti funkce
+<strong>int_equal</strong> neporovnává pouze dvě celočíselné hodnoty, protože
+její typ je:</div></p>
+
+<pre>
+val int_equal : 'a -&gt; 'a -&gt; bool = &lt;fun&gt;
+</pre>
+
+<p>což znamená, že se porovnávají dvě hodnoty libovolného typu. Úprava na
+porovnání pouze celých čísel může vypadat například takto:</p>
+
+<pre>
+let <strong>int_equal</strong> (x:int) y =
+  x = y;;
+</pre>
+
+<p>Typ této nové funkce odpovídá:</p>
+
+<pre>
+val int_equal : int -&gt; int -&gt; bool = &lt;fun&gt;
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: uvedením typu prvního parametru jsme
+vlastně překladači <i>vnutili</i> i typ parametru druhého, což je odvozeno
+z&nbsp;definice operátoru porovnání.</div></p>
+
+<p>Samozřejmě by bylo možné typ funkce nepřímo překladači vnutit i například
+takto:</p>
+
+<pre>
+let <strong>int_equal</strong> x y =
+  x = y+0;;
+</pre>
+
+<p>se stejným odvozením typů:</p>
+
+<pre>
+val int_equal : int -&gt; int -&gt; bool = &lt;fun&gt;
+</pre>
+
+
+
+<p><a name="k05"></a></p>
+<h2 id="k05">5. Datový typ <strong>Option</strong> a pattern matching</h2>
+
+<p>Způsob kombinace datového typu <strong>Option</strong> s&nbsp;technologií
+<i>pattern matchingu</i> jsme si již ukázali v&nbsp;článku o programovacím
+jazyku F#. V&nbsp;OCamlu vše pracuje prakticky totožným způsobem, což je dobře,
+protože pattern matching nám totiž umožňuje velmi elegantním způsobem hodnoty
+typu <strong>Option(typ)</strong> zpracovávat.</p>
+
+<p>Demonstrační příklad, který vrací hodnotu <strong>true</strong> či
+<strong>false</strong> na základě toho, zda funkci předáme obalenou hodnotu či
+<strong>None</strong>, můžeme do OCamlu přepsat takto:</p>
+
+<pre>
+let <strong>exists</strong> x =
+  match x with
+  | Some(x) -&gt; true
+  | None -&gt; false;;
+&nbsp;
+let <strong>maybeAnswer1</strong> = Some 42;;
+let <strong>maybeAnswer2</strong> = None;;
+&nbsp;
+exists maybeAnswer1;;
+exists maybeAnswer2;;
+</pre>
+
+<p>Výsledkem bude &ndash; naprosto podle očekávání &ndash; tato dvojice
+zpráv:</p>
+
+<pre>
+true
+false
+</pre>
+
+<p>Díky tomu, že překladač ví, jak přesně je definován typ
+<strong>Option</strong>, dokáže detekovat takový programový kód, v&nbsp;němž
+nejsou pokryty všechny možnosti, které mohou v&nbsp;runtime nastat. Podívejme
+se například na funkci, v&nbsp;níž jsme &bdquo;omylem&ldquo; vynechali vzor
+<strong>None</strong> s&nbsp;jeho větví:</p>
+
+<pre>
+let <strong>exists</strong> x =
+  match x with
+  | Some(x) -&gt; true
+;;
+&nbsp;
+let <strong>maybeAnswer1</strong> = Some 42;;
+let <strong>maybeAnswer2</strong> = None;;
+&nbsp;
+exists maybeAnswer1;;
+exists maybeAnswer2;;
+</pre>
+
+<p>Překladač v&nbsp;tomto případě přesně detekuje problém, což je patrné
+z&nbsp;následujícího screenshotu:</p>
+
+<img src="https://i.iinfo.cz/images/145/ocaml4-1.webp" class="image-1106569" width="722" height="235" alt="&#160;" title="Autor: tisnik, podle licence: &lt;a href=&quot;http://en.wikipedia.org/wiki/Rights_Managed&quot;&gt;Rights Managed&lt;/a&gt;" />
+<p><i>Obrázek 1: Detekce chybějící větve <strong>None</strong> ve webovém
+prostředí.</i></p>
+
+<p>Pokusme se naopak vynechat vzor <strong>Some</strong> s&nbsp;jeho větví:</p>
+
+<pre>
+let <strong>exists</strong> x =
+  match x with
+  | None -&gt; false;;
+&nbsp;
+let <strong>maybeAnswer1</strong> = Some 42;;
+let <strong>maybeAnswer2</strong> = None;;
+&nbsp;
+exists maybeAnswer1;;
+exists maybeAnswer2;;
+</pre>
+
+<p>Překladač opět přesně určí, kde nastala chyba:</p>
+
+<img src="https://i.iinfo.cz/images/145/ocaml4-2.webp" class="image-1106570" width="728" height="233" alt="&#160;" title="Autor: tisnik, podle licence: &lt;a href=&quot;http://en.wikipedia.org/wiki/Rights_Managed&quot;&gt;Rights Managed&lt;/a&gt;" />
+<p><i>Obrázek 2: Detekce chybějící větve <strong>Some</strong> ve webovém
+prostředí.</i></p>
+
+
+
+<p><a name="k06"></a></p>
+<h2 id="k06">6. Praktický příklad &ndash; hledání prvku v&nbsp;seznamu</h2>
+
+<p>Stejně jako v&nbsp;případě programovacího jazyka F# můžeme i v&nbsp;OCamlu
+poměrně elegantním způsobem zapsat algoritmus vyhledání prvku v&nbsp;seznamu.
+V&nbsp;případě, že prvek bude nalezen, vrátí se jeho hodnota obalená do
+<strong>Some(typ)</strong>, pokud nalezen naopak nebude, vrátí se hodnota
+<strong>None</strong> (nemusíme tedy řešit nějaké &bdquo;magické hodnoty&ldquo;
+pro signalizaci, že prvek nebyl nalezen). Typ prvků bude odvozen
+překladačem:</p>
+
+<pre>
+
+let rec <strong>find</strong> list value =
+  match list with
+  | head :: tail -&gt; if head = value then Some(head) else <strong>find</strong> tail value
+  | [] -&gt; None
+;;
+&nbsp;
+let <strong>list1</strong> = [1; 2; 3; 4];;
+let <strong>list2</strong> = [0; 0; 0; 0];;
+let <strong>list3</strong> = [];;
+let <strong>list4</strong> = [3];;
+&nbsp;
+find list1 3;;
+find list2 3;;
+find list3 3;;
+find list4 3;;
+</pre>
+
+<p>Výsledky získané tímto příkladem vypadají takto:</p>
+
+<pre>
+find list1 3 ;;
+- : int option = Some 3
+&nbsp;
+find list2 3 ;;
+- : int option = None
+&nbsp;
+find list3 3 ;;
+- : int option = None
+&nbsp;
+find list4 3 ;;
+- : int option = Some 3
+</pre>
+
+<p>Tisk hodnoty (ať již existující nebo neexistující) můžeme pochopitelně
+realizovat vlastní funkcí, zde konkrétně funkcí nazvanou (poněkud obecně)
+<strong>print_item</strong>. I v&nbsp;této funkci použijeme pattern
+matching:</p>
+
+<pre>
+let rec <strong>find</strong> list value =
+  match list with
+  | head :: tail -&gt; if head = value then Some(head) else <strong>find</strong> tail value
+  | [] -&gt; None
+;;
+&nbsp;
+let <strong>print_item</strong> value =
+  match value with
+  | Some(x) -&gt; Printf.printf "%d\n" x
+  | None -&gt; Printf.printf "not found\n"
+;;
+&nbsp;
+let <strong>list1</strong> = [1; 2; 3; 4];;
+let <strong>list2</strong> = [0; 0; 0; 0];;
+let <strong>list3</strong> = [];;
+let <strong>list4</strong> = [3];;
+&nbsp;
+print_iten (ind list1 3);;
+print_iten (ind list2 3);;
+print_iten (ind list3 3);;
+print_iten (ind list4 3);;
+</pre>
+
+
+
+<p><a name="k07"></a></p>
+<h2 id="k07">7. Zřetězení volání funkcí, které si předávají hodnoty typu <strong>Option</strong> &ndash; neidiomatické řešení</h2>
+
+<p>Poměrně často se v&nbsp;praxi setkáme s&nbsp;nutností zřetězit několik
+funkcí do takzvané <i>pipeline</i> (možná můžeme stále používat postarší termín
+<i>kolona</i>, který celý proces dobře vystihuje). To znamená, že jedna funkce
+pošle své výsledky do další funkce, ta pošle výsledky do další funkce atd. atd.
+To může být poměrně elegantní řešení, které má navíc v&nbsp;některých jazycích
+podporu v&nbsp;syntaxi (threading makro v&nbsp;Clojure atd.). Ovšem může se
+stát, že funkce nebudou přímo produkovat výsledné hodnoty, ale obalí je buď do
+struktury <strong>Option</strong> nebo <strong>Result</strong> (a to podle
+povahy řešeného problému).</p>
+
+<p>Podívejme se na uměle vytvořený příklad, v&nbsp;němž se vstupní hodnota
+získá vyhledáním prvku v&nbsp;seznamu. V&nbsp;dalším kroku se hodnota
+nalezeného prvku zdvojnásobí a přičte se k&nbsp;ní jednička. Problém spočívá
+v&nbsp;tom, že už první funkce může vrátit <strong>None</strong>, pokud prvek
+nenalezne. A naše řešení s&nbsp;tím musí počítat. Naivní implementace tedy bude
+ve všech funkcích vyžadovat, aby akceptovaly typ <strong>Option</strong>, což
+není ani ideální ani dobře čitelné (a už vůbec ne idiomatické):</p>
+
+<pre>
+let rec <strong>find</strong> list value =
+  match list with
+  | head :: tail -&gt; if head = value then Some(head) else find tail value
+  | [] -&gt; None
+;;
+&nbsp;
+let <strong>print_item</strong> value =
+  match value with
+  | Some(x) -&gt; Printf.printf "%d\n" x
+  | None -&gt; Printf.printf "not found\n"
+;;
+&nbsp;
+let <strong>double</strong> value : int option =
+  match value with
+  | Some(x) -&gt; Some(2*x)
+  | None -&gt; None
+;;
+&nbsp;
+let <strong>inc</strong> value : int option =
+  match value with
+  | Some(x) -&gt; Some(x+1)
+  | None -&gt; None
+;;
+&nbsp;
+&nbsp;
+let list1 = [1; 2; 3; 4];;
+let list2 = [0; 0; 0; 0];;
+let list3 = [];;
+let list4 = [3];;
+&nbsp;
+&nbsp;
+print_item (inc (double (find list1 3)));;
+print_item (inc (double (find list2 3)));;
+print_item (inc (double (find list3 3)));;
+print_item (inc (double (find list4 3)));; 
+</pre>
+
+<p>Výsledky sice budou korektní, ale krásou tento program neoplývá:</p>
+
+<pre>
+print_item (inc (double (find list1 3))) ;;
+<strong>7</strong>
+&nbsp;
+print_item (inc (double (find list2 3))) ;;
+<strong>not found</strong>
+&nbsp;
+print_item (inc (double (find list3 3))) ;;
+<strong>not found</strong>
+&nbsp;
+print_item (inc (double (find list4 3))) ;;
+<strong>7</strong>
+</pre>
+
+
+
+<p><a name="k08"></a></p>
+<h2 id="k08">8. Zřetězení volání funkcí, které si předávají hodnoty typu <strong>Option</strong> &ndash; řešení založené na <strong>bind</strong></h2>
+
+<p>Předchozí příklad ukázal problém, s&nbsp;nímž se setkáváme prakticky vždy
+při vytváření pipeline/kolony. Řešení spočívá v&nbsp;tom, že namísto kolony
+vlastně vytvoříme obdobu tohoto kolejiště &ndash; <a
+href="https://miro.medium.com/v2/resize:fit:1280/1*pxXvepfiDZlsO2X-KSwFqQ.png">https://miro.medium.com/v2/resize:fit:1280/1*pxXvepfiDZlsO2X-KSwFqQ.png</a>.
+Zelená část kolejiště odpovídá tzv.&nbsp;&bdquo;happy path&ldquo;,
+tj.&nbsp;v&nbsp;našem případě situaci, kdy funkce budou vracet hodnoty
+<strong>Some(typ)</strong> a na červenou část se odbočí ve chvíli, kdy nějaká
+funkce vrátí <strong>None</strong> (ještě názornější to bude u typu
+<strong>Result</strong>). Po odbočení do červené části se již nemůžeme vrátit
+zpět (vlaky jedou zleva doprava).</p>
+
+<p>A pro zjednodušení programování &bdquo;výhybek&ldquo; i vlastních funkcí
+slouží velmi užitečná funkce nazvaná <strong>Option.bind</strong>. Její typ je
+následující:</p>
+
+<pre>
+val bind : 'a option -&gt; ('a -&gt; 'b option) -&gt; 'b option
+</pre>
+
+<p>což znamená, že tato funkce má dva parametry &ndash; dokážete je již
+přečíst?</p>
+
+<p>Důležité je chování této funkce:</p>
+
+<ol>
+<li>Pokud je do <strong>bind</strong> předána hodnota <strong>None</strong>, vrátí se hodnota <strong>None</strong></li>
+<li>Pokud je předána hodnota <strong>Some(x)</strong>, je zavolána funkce <strong>f</strong> s&nbsp;extrahovanou hodnotou <strong>x</strong></li>
+<li>Výsledkem musí být hodnota <strong>Option</strong></li>
+</ol>
+
+<p>Co to v&nbsp;praxi znamená? Předchozí demonstrační příklad můžeme upravit
+například do této (prozatím nepříliš elegantní) podoby:</p>
+
+<pre>
+let rec <strong>find</strong> list value =
+  match list with
+  | head :: tail -&gt; if head = value then Some(head) else <strong>find</strong> tail value
+  | [] -&gt; None
+;;
+&nbsp;
+let <strong>double</strong> value =
+  Some(2*value)
+;;
+&nbsp;
+let <strong>inc</strong> value =
+  Some(value+1)
+;;
+&nbsp;
+&nbsp;
+let list1 = [1; 2; 3; 4];;
+let list2 = [0; 0; 0; 0];;
+let list3 = [];;
+let list4 = [3];;
+&nbsp;
+Option.bind (Option.bind (find list1 3) double) inc;;
+Option.bind (Option.bind (find list2 3) double) inc;;
+Option.bind (Option.bind (find list3 3) double) inc;;
+Option.bind (Option.bind (find list4 3) double) inc;;
+</pre>
+
+<p>Výsledky by měly odpovídat očekávání:</p>
+
+<pre>
+Option.bind (Option.bind (find list1 3) double) inc ;;
+- : int option = Some 7
+&nbsp;
+Option.bind (Option.bind (find list2 3) double) inc ;;
+- : int option = None
+&nbsp;
+Option.bind (Option.bind (find list3 3) double) inc ;;
+- : int option = None
+&nbsp;
+Option.bind (Option.bind (find list4 3) double) inc; ;;
+- : int option = Some 7
+</pre>
+
+
+
+<p><a name="k09"></a></p>
+<h2 id="k09">9. Funkce <strong>Option.bind</strong> zapsaná formou infixového operátoru</h2>
+
+<p><a href="#k08">Příklad z&nbsp;předchozí kapitoly</a> byl sice čitelnější,
+než příklad ze sedmé kapitoly, ale můžeme se pokusit o jeho další vylepšení. To
+spočívá v&nbsp;tom, že si funkci <strong>Option.bind</strong> namapujeme na
+infixový operátor &gt;&gt;= (ano, i to je v&nbsp;OCamlu možné, i když je nutné
+dodržovat pravidla pro infixové operátory, k&nbsp;čemuž se vrátíme příště).
+Samotný zápis je až triviální, nesmíme ovšem zapomenout na závorky okolo jména
+funkce:</p>
+
+<pre>
+let (&gt;&gt;=) = Option.bind ;;
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: ve skutečnosti jsme definovali symbol
+pro funkci, která ovšem splňuje pravidla pro pojmenování infixových operátorů,
+takže se zapisuje v&nbsp;infixové podobě (mezi své dva parametry &ndash;
+operandy).</div></p>
+
+<p>To nám umožňuje zapsat zřetězení tak, že bude zřejmé již při letmém pohledu
+na kód:</p>
+
+<pre>
+(find list1 3) &gt;&gt;= double &gt;&gt;= inc;;
+(find list2 3) &gt;&gt;= double &gt;&gt;= inc;;
+(find list3 3) &gt;&gt;= double &gt;&gt;= inc;;
+(find list4 3) &gt;&gt;= double &gt;&gt;= inc;;
+</pre>
+
+<p>Upravený kód demonstračního příkladu bude vypadat takto:</p>
+
+<pre>
+let rec <strong>find</strong> list value =
+  match list with
+  | head :: tail -&gt; if head = value then Some(head) else find tail value
+  | [] -&gt; None
+;;
+&nbsp;
+let <strong>double</strong> value =
+  Some(2*value)
+;;
+&nbsp;
+let <strong>inc</strong> value =
+  Some(value+1)
+;;
+&nbsp;
+&nbsp;
+let list1 = [1; 2; 3; 4];;
+let list2 = [0; 0; 0; 0];;
+let list3 = [];;
+let list4 = [3];;
+&nbsp;
+let (&gt;&gt;=) = Option.bind ;;
+&nbsp;
+(find list1 3) &gt;&gt;= double &gt;&gt;= inc;;
+(find list2 3) &gt;&gt;= double &gt;&gt;= inc;;
+(find list3 3) &gt;&gt;= double &gt;&gt;= inc;;
+(find list4 3) &gt;&gt;= double &gt;&gt;= inc;;
+</pre>
+
+<p>Výsledky přitom budou stejné, jako v&nbsp;předchozím příkladu.</p>
+
+
+
+<p><a name="k10"></a></p>
+<h2 id="k10">10. Datový typ <strong>Result</strong></h2>
+
+<p>I s&nbsp;datovým typem <strong>Results</strong> jsme se již seznámili.
+V&nbsp;programovacích jazycích F# a OCaml (a nutno dodat, že nejenom
+v&nbsp;nich) se používá ve chvílích, kdy je nutné z&nbsp;nějaké funkce či
+výrazu vrátit buď vypočtenou hodnotu nebo informaci o chybě. Zde nám tedy již
+typ <strong>Option</strong> s&nbsp;hodnotami <strong>Some</strong> a
+<strong>None</strong> přestává vyhovovat. Pro příklad nemusíme chodit daleko (a
+taktéž ho známe) &ndash; předpokládejme, že budeme chtít, aby námi definovaná
+funkce pro dělení celých čísel vracela v&nbsp;případě pokusu o dělení nulou
+chybové hlášení a nikoli nicneříkající hodnotu <strong>None</strong>.</p>
+
+<p>A přesně k&nbsp;tomuto účelu se jak v&nbsp;F#, tak i v&nbsp;OCamlu používá
+datový typ nazvaný příhodně <strong>Result</strong>. Tento datový typ se podobá
+již popsanému typu <strong>Option</strong>, ovšem s&nbsp;tím rozdílem, že
+obaluje buď výsledek (třeba návratovou hodnotu volané funkce) nebo informaci o
+chybě. Deklarace struktury <strong>Result</strong> vypadá následovně:</p>
+
+<pre>
+type ('a, 'e) t = ('a, 'e) result = 
+| Ok of 'a
+| Error of 'e
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: povšimněte si, že se generické typy
+<strong>'a</strong> a <strong>'e</strong> od sebe mohou lišit, což je, když se
+nad problémem zamyslíme, logický požadavek &ndash; informace o chybě je jiného
+typu než vracená hodnota.</div></p>
+
+
+
+<p><a name="k11"></a></p>
+<h2 id="k11">11. Praktický příklad &ndash; realizace funkce pro výpočet podílu dvou celočíselných hodnot</h2>
+
+<p>Funkci pro výpočet podílu dvou celých čísel můžeme zapsat takovým způsobem,
+aby se v&nbsp;těle funkce detekoval pokus o dělení nulou. V&nbsp;takovém
+případě vrátíme ve struktuře <strong>Result</strong> informaci o chybě, ve
+všech ostatních případech pak vrátíme výsledek, ovšem opět obalený do typu
+<strong>Result</strong>:</p>
+
+<pre>
+let <strong>divide</strong> (x:int) (y:int) =
+  match y with
+  | 0 -&gt; Error "divide by zero"
+  | _ -&gt; Ok (x/y)
+;;
+&nbsp;
+divide 10 2;;
+divide 10 0;;
+</pre>
+
+<p>Výsledky, které získáme pro dvě dvojice vstupních parametrů:</p>
+
+<pre>
+divide 10 2 ;;
+- : (int, string) result = Ok 5
+&nbsp;
+divide 10 0 ;;
+- : (int, string) result = Error "divide by zero"
+</pre>
+
+<p>Ve skutečnosti je typová inference jazyka OCaml tak dobrá, že můžeme
+vynechat i explicitní určení typů parametrů naší funkce:</p>
+
+<pre>
+let <strong>divide</strong> x y =
+  match y with
+  | 0 -&gt; Error "divide by zero"
+  | _ -&gt; Ok (x/y)
+;;
+&nbsp;
+divide 10 2;;
+divide 10 0;;
+</pre>
+
+<p>Odvozený typ funkce <strong>divide</strong> je i v&nbsp;tomto případě
+následující:</p>
+
+<pre>
+val divide : int -&gt; int -&gt; (int, string) result = &lt;fun&gt;
+</pre>
+
+<p>Samozřejmě si můžeme nadeklarovat pomocnou funkci, která zobrazí buď
+vypočtenou hodnotu, nebo informaci s&nbsp;chybou, která při výpočtu
+nastala:</p>
+
+<pre>
+let <strong>divide</strong> (x:int) (y:int) =
+    match y with
+    | 0 -&gt; Error "divide by zero"
+    | _ -&gt; Ok (x/y)
+;;
+&nbsp;
+let <strong>print_result</strong> value =
+    match value with
+    | Ok(value) -&gt; Printf.printf "%d\n" value
+    | Error(error) -&gt; Printf.printf "%s\n" error
+;;
+&nbsp;
+print_result (divide 10 2);;
+print_result (divide 1 0);;
+</pre>
+
+<p>Výsledky budou v&nbsp;tomto případě vypadat následovně:</p>
+
+<pre>
+divide 10 2;;
+- : (int, string) result = Ok 5
+&nbsp;
+divide 10 0 ;;
+- : (int, string) result = Error "divide by zero"
+</pre>
+
+<p>Jen pro úplnost &ndash; odstranění nadbytečných informací o typech parametrů
+funkce <strong>divide</strong>:</p>
+
+<pre>
+let <strong>divide</strong> x y =
+    match y with
+    | 0 -&gt; Error "divide by zero"
+    | _ -&gt; Ok (x/y)
+;;
+&nbsp;
+let <strong>print_result</strong> value =
+    match value with
+    | Ok(value) -&gt; Printf.printf "%d\n" value
+    | Error(error) -&gt; Printf.printf "%s\n" error
+;;
+&nbsp;
+print_result (divide 10 2);;
+print_result (divide 1 0);;
+</pre>
+
+
+
+<p><a name="k12"></a></p>
+<h2 id="k12">12. Zřetězení funkcí s&nbsp;využitím <strong>Result.bind</strong></h2>
+
+<p>V&nbsp;sedmé až deváté kapitole jsme si ukázali způsob implementace jedné
+z&nbsp;forem <a
+href="https://swlaschin.gitbooks.io/fsharpforfunandprofit/content/posts/recipe-part2.html">railway
+oriented programmingu</a>. Ve skutečnosti se s&nbsp;touto formou programování
+setkáme spíše v&nbsp;souvislosti se strukturou <strong>Result</strong> a nikoli
+<strong>Option</strong>, i když obě možnosti jsou zcela legální. Zkusme si nyní
+vytvořit následující kolonu:</p>
+
+<ol>
+<li>Vypočteme podíl dvou hodnot (což může vést k&nbsp;chybě)</li>
+<li>Výsledek vynásobíme dvěma</li>
+<li>Předchozí výsledek zvýšíme o jedničku</li>
+<li>Otestujeme, zda hodnota není větší než 5 (pokud ano, dojde k&nbsp;chybě)</li>
+</ol>
+
+<p>Jedno z&nbsp;možných řešení může vypadat takto. Až na jméno infixové funkce
+(lidé volí různé tvary) se jedná o idiomatické řešení:</p>
+
+<pre>
+let <strong>divide</strong> (x:int) (y:int) =
+  match y with
+  | 0 -&gt; Error "divide by zero"
+  | _ -&gt; Ok (x/y)
+;;
+&nbsp;
+let <strong>double</strong> value =
+  Ok(2*value)
+;;
+&nbsp;
+let <strong>inc</strong> value =
+  Ok(value+1)
+;;
+&nbsp;
+let <strong>tooHigh</strong> value =
+  if value &gt; 5 then Error "too high" else Ok(value)
+;;
+&nbsp;
+let (&gt;&gt;=) = Result.bind ;;
+&nbsp;
+(divide 2 1) &gt;&gt;= double &gt;&gt;= inc &gt;&gt;= tooHigh;;
+(divide 2 0) &gt;&gt;= double &gt;&gt;= inc &gt;&gt;= tooHigh;;
+(divide 20 1) &gt;&gt;= double &gt;&gt;= inc &gt;&gt;= tooHigh;;
+</pre>
+
+<p>Zobrazené výsledky ukazují, jak elegantně se detekovaly a zpracovaly oba
+typy chyb:</p>
+
+<pre>
+(divide 2 1) &gt;&gt;= double &gt;&gt;= inc &gt;&gt;= tooHigh ;;
+- : <strong>(int, string) result = Ok 5</strong>
+&nbsp;
+(divide 2 0) &gt;&gt;= double &gt;&gt;= inc &gt;&gt;= tooHigh ;;
+- : <strong>(int, string) result = Error "divide by zero"</strong>
+&nbsp;
+(divide 20 1) &gt;&gt;= double &gt;&gt;= inc &gt;&gt;= tooHigh ;;
+- : <strong>(int, string) result = Error "too high"</strong>
+</pre>
+
+<p><div class="rs-tip-major">Poznámka: pro zajímavost si můžete vyzkoušet
+jednotlivé body výpočtu různě prohazovat &ndash; výhybky na &bdquo;červenou
+kolej&ldquo; budou stále funkční.</div></p>
+
+
+
+<p><a name="k13"></a></p>
+<h2 id="k13">13. Datový typ <strong>Array</strong></h2>
+
+<p>Datový typ <strong>Array</strong> má v&nbsp;jazyce OCaml podobné vlastnosti,
+jako je tomu v&nbsp;jazyce F#. Podobně jako u seznamů, i u pole platí, že se
+jedná o homogenní datový typ, což znamená, že všechny jeho prvky jsou stejného
+typu. Přístup k&nbsp;prvkům se uskutečňuje přes indexy tak, jak jsme na to
+zvyklí z&nbsp;dalších programovacích jazyků, ovšem s&nbsp;tím rozdílem, že
+<i>syntaxe</i> je značně neobvyklá.</p>
+
+<p>Připomeňme si, jaké jsou základní rozdíly mezi poli a seznamy:</p>
+
+<table>
+<tr><th>Operace</th><th>Seznam</th><th>Pole</th></tr>
+<tr><td>přidání prvku</td><td>O(1)</td><td>O(n)</td></tr>
+<tr><td>přístup k&nbsp;prvku</td><td>O(n)</td><td>O(1)</td></tr>
+<tr><td>modifikace prvku</td><td>&times;</td><td>O(1)</td></tr>
+</table>
+
+<p><div class="rs-tip-major">Poznámka: přidání prvku vrací nový seznam nebo
+nové pole (u seznamů se pro přidání prvku na začátek používá operátor
+::).</div></p>
+
+<p>Seznamy se tedy používají zejména tehdy, pokud algoritmy umožní sekvenční
+procházení seznamem (s&nbsp;tím, že se vlastně neustále odděluje hlava od ocasu
+seznamu) a není zapotřebí prvky modifikovat. Naopak pole umožňuje náhodný
+přístup k&nbsp;prvkům a prvky lze modifikovat (mutovat). V&nbsp;budoucnosti se
+ovšem pravděpodobně dočkáme i přidání podpory pro neměnitelná pole, která tak
+budou moci využít výhod obou datových typů a navíc umožní například bezpečné
+vytváření řezů atd.</p>
+
+
+
+<p><a name="k14"></a></p>
+<h2 id="k14">14. Konstrukce pole: výčet prvků, opakování hodnoty v&nbsp;poli</h2>
+
+<p>Pole můžeme v&nbsp;jazyku OCaml zkonstruovat několika možnými způsoby.
+Základem je přitom konstrukce založená na zápisu výčtu hodnot všech prvků,
+které mají být v&nbsp;poli uloženy. Tento zápis (syntaxe) vypadá
+následovně:</p>
+
+<pre>
+let a = [| 1; 2; 3; 4; |];;
+</pre>
+
+<p>Výsledkem bude proměnná, jejíž hodnota a typ vypadá takto:</p>
+
+<pre>
+val a : int array = [|1; 2; 3; 4|]
+</pre>
+
+<p>Obdobou funkce <strong>Array.create</strong> z&nbsp;jazyka F# je
+v&nbsp;OCamlu funkce nazvaná <strong>Array.make</strong>, která má sice odlišné
+jméno, ale chová se podobně:</p>
+
+<pre>
+let a = Array.make 10 42;;
+&nbsp;
+a;;
+</pre>
+
+<p>Po konstrukci pole tímto způsobem získáme datovou strukturu s&nbsp;deseti
+prvky s&nbsp;hodnotou 42:</p>
+
+<pre>
+- : int array = [|42; 42; 42; 42; 42; 42; 42; 42; 42; 42|
+</pre>
+
+
+
+<p><a name="k15"></a></p>
+<h2 id="k15">15. Konstrukce pole s&nbsp;výpočtem hodnot jeho prvků</h2>
+
+<p>Pole lze ovšem v&nbsp;případě potřeby zkonstruovat i mnoha dalšími způsoby.
+Poměrně elegantním řešením může být použití funkce/konstruktoru
+<strong>Array.init</strong> (pojmenovaná stejně v&nbsp;OCamlu i v&nbsp;jazyku
+F#), které se předává počet prvků pole a taktéž funkce, která je použita pro
+výpočet hodnoty <i>n</i>-tého prvku na základě indexu <i>n</i>. Můžeme si tak
+snadno vytvořit například aritmetickou posloupnost od 1 do n (tj.k&nbsp;indexu
+prvku přičteme jedničku &ndash; indexy totiž začínají od nuly a my budeme
+chtít, aby hodnota prvního prvku byla jednička):</p>
+
+<pre>
+let <strong>next_x</strong> x =
+  x+1;;
+&nbsp;
+let a = Array.init 10 next_x;;
+&nbsp;
+a;;
+</pre>
+
+<p>Výsledkem konstrukce pole tímto způsobem bude následující proměnná</p>
+
+<pre>
+val a : int array = [|1; 2; 3; 4; 5; 6; 7; 8; 9; 10|]
+
+</pre>
+
+<p>Samozřejmě je možné výpočet různým způsobem upravovat, například do
+podoby:</p>
+
+<pre>
+let <strong>next_x</strong> x =
+  x*2;;
+&nbsp;
+let a = Array.init 10 next_x;;
+&nbsp;
+a;;
+</pre>
+
+<p>S&nbsp;výsledkem:</p>
+
+<pre>
+val a : int array = [|0; 2; 4; 6; 8; 10; 12; 14; 16; 18|]
+</pre>
+
+<p>Samozřejmě si můžeme nechat vytvořit pole s&nbsp;prvky odlišného typu:</p>
+
+<pre>
+let <strong>next_x</strong> x =
+  1./.(float_of_int x +. 1.);;
+&nbsp;
+let a = Array.init 10 next_x;;
+&nbsp;
+a;;
+</pre>
+
+<p>S&nbsp;výsledkem:</p>
+
+<pre>
+val a : float array =
+  [|1.; 0.5; 0.333333333333333315; 0.25; 0.2; 0.166666666666666657;
+    0.142857142857142849; 0.125; 0.111111111111111105; 0.1|]
+</pre>
+
+
+
+<p><a name="k16"></a></p>
+<h2 id="k16">16. Indexování prvků polí v&nbsp;jazyce OCaml</h2>
+
+<p>Způsob přístupu k&nbsp;prvkům polí je v&nbsp;jazyce OCaml poněkud neobvyklý
+a budete si na něj několik dnů zvykat. Problém spočívá v&nbsp;tom, že namísto
+dnes používaného zápisu <strong>pole[index]</strong> se totiž používá zápis
+<strong>pole.(index)</strong>, což je sice jednoznačné (nebude se to plést
+s&nbsp;definicí seznamu atd.), ovšem skutečně zvláštní. Ostatně podívejme se na
+jednoduchý příklad, v&nbsp;němž se pokusíme přistoupit k&nbsp;prvnímu prvku
+pole, k&nbsp;prvku druhému a -1 (což by například v&nbsp;Pythonu bylo
+korektní).  Tento příklad nám navíc ukazuje, že se prvky pole v&nbsp;jazyce
+OCaml indexují od nuly a nikoli od jedničky:</p>
+
+<pre>
+let a = [| 1; 2; 3; 4; |];;
+&nbsp;
+a.(0);;
+a.(1);;
+a.(-1);;
+</pre>
+
+<p>Z&nbsp;výsledků je patrné především to, že přístup k&nbsp;prvku
+s&nbsp;indexem -1 vyvolal výjimku:</p>
+
+<pre>
+a.(0) ;;
+- : int = 1
+&nbsp;
+a.(1) ;;
+- : int = 2
+&nbsp;
+a.(-1) ;;
+Exception: (Invalid_argument "index out of bounds")
+</pre>
+
+
+
+<p><a name="k17"></a></p>
+<h2 id="k17">17. Modifikace (mutace) prvků pole</h2>
+
+<p>Z&nbsp;článku o jazyku F# již víme, že důležitou vlastností polí (kterou se
+navíc pole odlišují od seznamů) je fakt, že prvky pole je možné modifikovat
+neboli mutovat. K&nbsp;tomuto účelu slouží operátor &lt;-, který již opět
+poměrně velmi dobře známe:</p>
+
+<pre>
+let a = [| 1; 2; 3; 4; |];;
+a;;
+&nbsp;
+a.(0) &lt;- 42;; 
+a;;
+&nbsp;
+a.(1) &lt;- 6502;;
+a;;
+</pre>
+
+<p>Podívejme se nyní, jaké hodnoty (pole) se postupně vypíšou po spuštění
+tohoto příkladu v&nbsp;interaktivním prostředí:</p>
+
+<pre>
+- : int array = [|1; 2; 3; 4|]
+&nbsp;
+- : int array = [|42; 2; 3; 4|]
+&nbsp;
+- : int array = [|42; 6502; 3; 4|]
+</pre>
+
+
+
+<p><a name="k18"></a></p>
+<h2 id="k18">18. Repositář s&nbsp;demonstračními příklady</h2>
+
+<p>Všechny výše popsané demonstrační příklady byly uloženy do repositáře
+dostupného na adrese <a
+href="https://github.com/tisnik/ocaml-examples/">https://github.com/tisnik/ocaml-examples/</a>.
+V&nbsp;tabulce umístěné pod tímto odstavcem jsou uvedeny odkazy na tyto
+příklady:</p>
+
+<table>
+<tr><th> #</th><th>Příklad</th><th>Popis příkladu</th><th>Cesta</th></tr>
+<tr><td> 1</td><td>article_01/hello_world_1.ml</td><td>zavolání funkce <strong>print_string</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_1.ml</a></td></tr>
+<tr><td> 2</td><td>article_01/hello_world_2.ml</td><td>zavolání funkce <strong>printf.Printf</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/hello_world_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td> 3</td><td>article_01/function.ml</td><td>definice funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/function.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/function.ml</a></td></tr>
+<tr><td> 4</td><td>article_01/lambda.ml</td><td>anonymní funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/lambda.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/lambda.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td> 5</td><td>article_01/function_type_1.ml</td><td>explicitní specifikace typu návratové hodnoty funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_1.ml</a></td></tr>
+<tr><td> 6</td><td>article_01/function_type_2.ml</td><td>explicitní specifikace typu návratové hodnoty funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/function_type_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td> 7</td><td>article_01/call_function_1.ml</td><td>definice jednoduché funkce s&nbsp;jejím zavoláním</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_1.ml</a></td></tr>
+<tr><td> 8</td><td>article_01/call_function_2.ml</td><td>definice jednoduché funkce s&nbsp;jejím zavoláním</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_2.ml</a></td></tr>
+<tr><td> 9</td><td>article_01/call_function_3.ml</td><td>použití operátoru <strong>+</strong> pro dvojici hodnot typu <strong>float</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_3.ml</a></td></tr>
+<tr><td>10</td><td>article_01/call_function_4.ml</td><td>použití operátoru <strong>+.</strong> pro dvojici hodnot typu <strong>float</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_4.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_4.ml</a></td></tr>
+<tr><td>11</td><td>article_01/call_function_5.ml</td><td>plná deklarace funkce bez syntaktického cukru</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_5.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_5.ml</a></td></tr>
+<tr><td>12</td><td>article_01/call_function_6.ml</td><td>plná deklarace funkce bez syntaktického cukru</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_6.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/call_function_6.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>13</td><td>article_01/local_binding_1.ml</td><td>definice lokálních symbolů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_1.ml</a></td></tr>
+<tr><td>14</td><td>article_01/local_binding_2.ml</td><td>definice lokálních symbolů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_01/local_binding_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>15</td><td>article_02/basic_binding.ml</td><td>navázání hodnoty na symbol (deklarace proměnné)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/basic_binding.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/basic_binding.ml</a></td></tr>
+<tr><td>16</td><td>article_02/print_variable.ml</td><td>tisk hodnoty proměnné</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/print_variable.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/print_variable.ml</a></td></tr>
+<tr><td>17</td><td>article_02/variables_and_functions.ml</td><td>předání proměnné do funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/variables_and_functions.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/variables_and_functions.ml</a></td></tr>
+<tr><td>18</td><td>article_02/redefine_symbol_1.ml</td><td>pokus o redefinici symbolu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/redefine_symbol_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/redefine_symbol_1.ml</a></td></tr>
+<tr><td>19</td><td>article_02/redefine_symbol_2.ml</td><td>pokus o redefinici symbolu (složitější příklad)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/redefine_symbol_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/redefine_symbol_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>20</td><td>article_02/requal_operator_1.ml</td><td>operátor =</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/equal_operator_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/equal_operator_1.ml</a></td></tr>
+<tr><td>21</td><td>article_02/requal_operator_2.ml</td><td>operátor =</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/equal_operator_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/equal_operator_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>22</td><td>article_02/immutable_variable.ml</td><td>&bdquo;změna&ldquo; neměnitelné proměnné</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/immutable_variable.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/immutable_variable.ml</a></td></tr>
+<tr><td>22</td><td>article_02/mutable_variable.ml</td><td>změna měnitelné proměnné</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/mutable_variable.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/mutable_variable.ml</a></td></tr>
+<tr><td>23</td><td>article_02/shadow.ml</td><td>shadowing symbolu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/shadow.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/shadow.ml</a></td></tr>
+<tr><td>24</td><td>article_02/incr.ml</td><td>standardní funkce <strong>incr</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/incr.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/incr.ml</a></td></tr>
+<tr><td>25</td><td>article_02/ident.ml</td><td>nejjednodušší polymorfická funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/ident.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/ident.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>26</td><td>article_02/tuple1.ml</td><td>datový typ n-tice (<i>tuple</i>)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/tuple1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/tuple1.ml</a></td></tr>
+<tr><td>27</td><td>article_02/tuple2.ml</td><td>datový typ n-tice (<i>tuple</i>)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/tuple2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/tuple2.ml</a></td></tr>
+<tr><td>28</td><td>article_02/record1.ml</td><td>datový typ záznam (<i>record</i>), deklarace proměnné tohoto typu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/record1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/record1.ml</a></td></tr>
+<tr><td>29</td><td>article_02/record2.ml</td><td>datový typ záznam (<i>record</i>) a typová inference</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/record2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/record2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>30</td><td>article_02/unit.ml</td><td>datový typ <strong>unit</strong> a rozdíl oproti funkcím bez parametrů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/unit.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/unit.ml</a></td></tr>
+<tr><td>31</td><td>article_02/polymorphic.ml</td><td>použití polymorfických funkcí</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/polymorphic.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/polymorphic.ml</a></td></tr>
+<tr><td>32</td><td>article_02/two_same_records.ml</td><td>dva datové typy záznam se shodnými prvky</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_02/two_same_records.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_02/two_same_records.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>33</td><td>article_03/recursion1.ml</td><td>pokus o deklaraci funkce s&nbsp;přímou rekurzí založený na <strong>let</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion1.ml</a></td></tr>
+<tr><td>34</td><td>article_03/recursion2.ml</td><td>deklarace funkce s&nbsp;přímou rekurzí založená na <strong>let rec</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion2.ml</a></td></tr>
+<tr><td>35</td><td>article_03/recursion3.ml</td><td>využití tail rekurze pro výpočet členu Fibonacciho posloupnosti</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion3.ml</a></td></tr>
+<tr><td>36</td><td>article_03/recursion4.ml</td><td>obyčejná nerekurzivní funkce definovaná přes <strong>let rec</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion4.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/recursion4.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>37</td><td>article_03/odd_even_1.ml</td><td>nepřímá rekurze (nekorektní varianta)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_1.ml</a></td></tr>
+<tr><td>38</td><td>article_03/odd_even_2.ml</td><td>nepřímá rekurze (taktéž nekorektní varianta)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_2.ml</a></td></tr>
+<tr><td>39</td><td>article_03/odd_even_3.ml</td><td>jediný korektní zápis nepřímé rekurze</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_3.ml</a></td></tr>
+<tr><td>40</td><td>article_03/odd_even_4.ml</td><td>nepřímá rekurze bez použití klíčového slova <strong>rec</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_4.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/odd_even_4.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>41</td><td>article_03/pattern1.ml</td><td>výpočet Faktoriálu založený na pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern1.ml</a></td></tr>
+<tr><td>42</td><td>article_03/pattern2.ml</td><td>výpočet Faktoriálu založený na pattern matchingu, sloučení vstupů se stejným výstupem</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern2.ml</a></td></tr>
+<tr><td>43</td><td>article_03/pattern3.ml</td><td>kontrola neplatného vstupu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern3.ml</a></td></tr>
+<tr><td>44</td><td>article_03/pattern4.ml</td><td>pattern matching pro větší množství hodnot</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern4.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern4.ml</a></td></tr>
+<tr><td>45</td><td>article_03/pattern5.ml</td><td>rekurzivní implementace Ackermannovy funkce</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern5.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern5.ml</a></td></tr>
+<tr><td>46</td><td>article_03/pattern6.ml</td><td>kontrola neplatných vstupních hodnot pro Ackermannovu funkci</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern6.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/pattern6.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>47</td><td>article_03/fibonacci1.ml</td><td>výpočet Fibonacciho posloupnosti založený na pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/fibonacci1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/fibonacci1.ml</a></td></tr>
+<tr><td>48</td><td>article_03/fibonacci2.ml</td><td>výpočet Fibonacciho posloupnosti založený na pattern matchingu (více idiomatický zápis)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/fibonacci2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/fibonacci2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>49</td><td>article_03/first.ml</td><td>funkce vracející první prvek z&nbsp;dvojice založená na pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/first.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/first.ml</a></td></tr>
+<tr><td>50</td><td>article_03/second.ml</td><td>funkce vracející druhý prvek z&nbsp;dvojice založená na pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/second.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/second.ml</a></td></tr>
+<tr><td>51</td><td>article_03/zero_coordinate.ml</td><td>test na nulovou souřadnici/souřadnice založený na pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/zero_coordinate.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/zero_coordinate.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>52</td><td>article_03/get_model.ml</td><td>získání prvku ze záznamu (opět založeno na pattern matchingu)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/get_model.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/get_model.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>53</td><td>article_03/list_literal_1.ml</td><td>seznam se třemi prvky typu celé číslo</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_1.ml</a></td></tr>
+<tr><td>54</td><td>article_03/list_literal_2.ml</td><td>seznam se třemi prvky typu řetězec</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_2.ml</a></td></tr>
+<tr><td>55</td><td>article_03/list_literal_3.ml</td><td>seznam se třemi prvky typu n-tice</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_3.ml</a></td></tr>
+<tr><td>56</td><td>article_03/list_literal_4.ml</td><td>nekorektní pokus o vytvoření seznamu s&nbsp;prvky různých typů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_4.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_literal_4.ml</a></td></tr>
+<tr><td>57</td><td>article_03/empty_list.ml</td><td>konstrukce prázdného seznamu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/empty_list.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/empty_list.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>58</td><td>article_03/head_tail_1.ml</td><td>složení seznamu se dvěma prvky s&nbsp;využitím operátoru <strong>::</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/head_tail_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/head_tail_1.ml</a></td></tr>
+<tr><td>59</td><td>article_03/head_tail_2.ml</td><td>složení seznamu se třemi prvky s&nbsp;využitím operátoru <strong>::</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/head_tail_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/head_tail_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>60</td><td>article_03/list_properties.ml</td><td>vlastnosti (<i>properties</i>) seznamů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_properties.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/list_properties.ml</a></td></tr>
+<tr><td>61</td><td>article_03/len_1.ml</td><td>naivní rekurzivní výpočet délky seznamu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/len_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/len_1.ml</a></td></tr>
+<tr><td>62</td><td>article_03/len_2.ml</td><td>vylepšený rekurzivní výpočet délky seznamu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/len_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/len_2.ml</a></td></tr>
+<tr><td>63</td><td>article_03/len_3.ml</td><td>vylepšený rekurzivní výpočet délky seznamu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/len_3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/len_3.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>64</td><td>article_03/join_lists.ml</td><td>spojení dvou seznamů operátorem <strong>::</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/join_lists.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/join_lists.ml</a></td></tr>
+<tr><td>65</td><td>article_03/append_1.ml</td><td>implementace spojení dvou seznamů rekurzivním výpočtem</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/append_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/append_1.ml</a></td></tr>
+<tr><td>66</td><td>article_03/append_2.ml</td><td>implementace spojení dvou seznamů rekurzivním výpočtem, použití pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/append_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/append_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>67</td><td>article_03/sum_1.ml</td><td>součet hodnot všech prvků v&nbsp;seznamu (bez tail rekurze)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/sum_1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/sum_1.ml</a></td></tr>
+<tr><td>68</td><td>article_03/sum_2.ml</td><td>součet hodnot všech prvků v&nbsp;seznamu (s&nbsp;využitím tail rekurze)</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/sum_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/sum_2.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>69</td><td>article_03/print_int_list.ml</td><td>tisk seznamu celých čísel</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/print_int_list.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/print_int_list.ml</a></td></tr>
+<tr><td>70</td><td>article_03/print_string_list.ml</td><td>tisk seznamu řetězců</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/print_string_list.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/print_string_list.ml</a></td></tr>
+<tr><td>71</td><td>article_03/print_list_prefix.ml</td><td>tisk seznamu s&nbsp;prefixem</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_03/print_list_prefix.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_03/print_list_prefix.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>72</td><td>article_04/none_value.ml</td><td>hodnota <strong>None</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/none_value.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/none_value.ml</a></td></tr>
+<tr><td>73</td><td>article_04/some_value1.ml</td><td>hodnota <strong>Some(typ)</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_value1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_value1.ml</a></td></tr>
+<tr><td>74</td><td>article_04/some_value2.ml</td><td>hodnota <strong>Some(typ)</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_value2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_value2.ml</a></td></tr>
+<tr><td>75</td><td>article_04/some_value3.ml</td><td>hodnota <strong>Some(typ)</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_value3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_value3.ml</a></td></tr>
+<tr><td>76</td><td>article_04/option_exists1.ml</td><td>základní pattern matching, korektní varianta</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_exists1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_exists1.ml</a></td></tr>
+<tr><td>77</td><td>article_04/option_exists2.ml</td><td>základní pattern matching, nekorektní varianta</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_exists2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_exists2.ml</a></td></tr>
+<tr><td>78</td><td>article_04/option_exists3.ml</td><td>základní pattern matching, nekorektní varianta</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_exists3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_exists3.ml</a></td></tr>
+<tr><td>79</td><td>article_04/find_in_list1.ml</td><td>vyhledávání prvku v&nbsp;seznamu založené na pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/find_in_list1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/find_in_list1.ml</a></td></tr>
+<tr><td>80</td><td>article_04/find_in_list2.ml</td><td>varianta předchozího programu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/find_in_list2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/find_in_list2.ml</a></td></tr>
+<tr><td>81</td><td>article_04/option_get.ml</td><td>pokus o přečtení hodnoty obalené typem <strong>Option</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_get.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_get.ml</a></td></tr>
+<tr><td>82</td><td>article_04/is_none_is_some.ml</td><td>predikáty <strong>is_none</strong> a <strong>is_some</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/is_none_is_some.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/is_none_is_some.ml</a></td></tr>
+<tr><td>83</td><td>article_04/option_equal.ml</td><td>ekvivalence dvou obalených hodnot</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_equal.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_equal.ml</a></td></tr>
+<tr><td>84</td><td>article_04/some_none.ml</td><td>obalení obalené hodnoty</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_none.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/some_none.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>85</td><td>article_04/result_divide1.ml</td><td>ukázka použití datového typu <strong>Result</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide1.ml</a></td></tr>
+<tr><td>86</td><td>article_04/result_divide2.ml</td><td>ukázka použití datového typu <strong>Result</strong> a pattern matchingu</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide2.ml</a></td></tr>
+<tr><td>87</td><td>article_04/result_divide3.ml</td><td>stejné jako result_divide1.fs, ovšem bez explicitního zápisu typů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide3.ml</a></td></tr>
+<tr><td>88</td><td>article_04/result_divide4.ml</td><td>stejné jako result_divide2.fs, ovšem bez explicitního zápisu typů</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide4.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/result_divide4.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>89</td><td>article_04/array_value.ml</td><td>deklarace pole výčtem jeho prvků</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_value.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_value.ml</a></td></tr>
+<tr><td>90</td><td>article_04/array_make.ml</td><td>funkce <strong>Array.make</strong> pro konstrukci pole</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_make.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_make.ml</a></td></tr>
+<tr><td>91</td><td>article_04/array_init1.ml</td><td>inicializace prvků pole funkcí <strong>Array.init</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_init1.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_init1.ml</a></td></tr>
+<tr><td>92</td><td>article_04/array_init2.ml</td><td>inicializace prvků pole funkcí <strong>Array.init</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_init2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_init2.ml</a></td></tr>
+<tr><td>93</td><td>article_04/array_init3.ml</td><td>inicializace prvků pole funkcí <strong>Array.init</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_init3.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_init3.ml</a></td></tr>
+<tr><td>94</td><td>article_04/array_indexing.ml</td><td>indexování prvků pole</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_indexing.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_indexing.ml</a></td></tr>
+<tr><td>95</td><td>article_04/array_mutation.ml</td><td>mutace pole: modifikace hodnot jeho prvků</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_mutation.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/array_mutation.ml</a></td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>96</td><td>article_04/option_no_bind.ml</td><td>zřetězení volání funkcí, které si předávají hodnoty typu <strong>Option</strong> &ndash; neidiomatické řešení</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_no_bind.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_no_bind.ml</a></td></tr>
+<tr><td>97</td><td>article_04/option_bind.ml</td><td>řešení založené na <strong>bind</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_bind.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/option_bind.ml</a></td></tr>
+<tr><td>98</td><td>article_04/bind_infix_operator.ml</td><td>funkce <strong>Option.bind</strong> zapsaná formou infixového operátoru</td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/bind_infix_operator.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/bind_infix_operator.ml</a></td></tr>
+<tr><td>99</td><td>article_04/bind_infix_operator_2.ml</td><td>zřetězení funkcí s&nbsp;využitím <strong>Result.bind</strong></td><td><a href="https://github.com/tisnik/ocaml-examples/tree/master/article_04/bind_infix_operator_2.ml">https://github.com/tisnik/ocaml-examples/tree/master/article_04/bind_infix_operator_2.ml</a></td></tr>
+</table>
+
+
+
+<p><a name="k19"></a></p>
+<h2 id="k19">19. Odkazy na Internetu</h2>
+
+<ol>
+
+<li>General-Purpose, Industrial-Strength, Expressive, and Safe<br />
+<a href="https://ocaml.org/">https://ocaml.org/</a>
+</li>
+
+<li>OCaml playground<br />
+<a href="https://ocaml.org/play">https://ocaml.org/play</a>
+</li>
+
+<li>Online Ocaml Compiler IDE<br />
+<a href="https://www.jdoodle.com/compile-ocaml-online/">https://www.jdoodle.com/compile-ocaml-online/</a>
+</li>
+
+<li>Get Started - OCaml<br />
+<a href="https://www.ocaml.org/docs">https://www.ocaml.org/docs</a>
+</li>
+
+<li>Get Up and Running With OCaml<br />
+<a href="https://www.ocaml.org/docs/up-and-running">https://www.ocaml.org/docs/up-and-running</a>
+</li>
+
+<li>Better OCaml (Online prostředí)<br />
+<a href="https://betterocaml.ml/?version=4.14.0">https://betterocaml.ml/?version=4.14.0</a>
+</li>
+
+<li>OCaml file extensions<br />
+<a href="https://blog.waleedkhan.name/ocaml-file-extensions/">https://blog.waleedkhan.name/ocaml-file-extensions/</a>
+</li>
+
+<li>First thoughts on Rust vs OCaml<br />
+<a href="https://blog.darklang.com/first-thoughts-on-rust-vs-ocaml/">https://blog.darklang.com/first-thoughts-on-rust-vs-ocaml/</a>
+</li>
+
+<li>Standard ML of New Jersey<br />
+<a href="https://www.smlnj.org/">https://www.smlnj.org/</a>
+</li>
+
+<li>Programming Languages: Standard ML - 1 (a navazující videa)<br />
+<a href="https://www.youtube.com/watch?v=2sqjUWGGzTo">https://www.youtube.com/watch?v=2sqjUWGGzTo</a>
+</li>
+
+<li>6 Excellent Free Books to Learn Standard ML<br />
+<a href="https://www.linuxlinks.com/excellent-free-books-learn-standard-ml/">https://www.linuxlinks.com/excellent-free-books-learn-standard-ml/</a>
+</li>
+
+<li>SOSML: The Online Interpreter for Standard ML<br />
+<a href="https://sosml.org/">https://sosml.org/</a>
+</li>
+
+<li>ML (Computer program language)<br />
+<a href="https://www.barnesandnoble.com/b/books/other-programming-languages/ml-computer-program-language/_/N-29Z8q8Zvy7">https://www.barnesandnoble.com/b/books/other-programming-languages/ml-computer-program-language/_/N-29Z8q8Zvy7</a>
+</li>
+
+<li>Strong Typing<br />
+<a href="https://perl.plover.com/yak/typing/notes.html">https://perl.plover.com/yak/typing/notes.html</a>
+</li>
+
+<li>What to know before debating type systems<br />
+<a href="http://blogs.perl.org/users/ovid/2010/08/what-to-know-before-debating-type-systems.html">http://blogs.perl.org/users/ovid/2010/08/what-to-know-before-debating-type-systems.html</a>
+</li>
+
+<li>Types, and Why You Should Care (Youtube)<br />
+<a href="https://www.youtube.com/watch?v=0arFPIQatCU">https://www.youtube.com/watch?v=0arFPIQatCU</a>
+</li>
+
+<li>DynamicTyping (Martin Fowler)<br />
+<a href="https://www.martinfowler.com/bliki/DynamicTyping.html">https://www.martinfowler.com/bliki/DynamicTyping.html</a>
+</li>
+
+<li>DomainSpecificLanguage (Martin Fowler)<br />
+<a href="https://www.martinfowler.com/bliki/DomainSpecificLanguage.html">https://www.martinfowler.com/bliki/DomainSpecificLanguage.html</a>
+</li>
+
+<li>Language Workbenches: The Killer-App for Domain Specific Languages?<br />
+<a href="https://www.martinfowler.com/articles/languageWorkbench.html">https://www.martinfowler.com/articles/languageWorkbench.html</a>
+</li>
+
+<li>Effective ML (Youtube)<br />
+<a href="https://www.youtube.com/watch?v=-J8YyfrSwTk">https://www.youtube.com/watch?v=-J8YyfrSwTk</a>
+</li>
+
+<li>Why OCaml (Youtube)<br />
+<a href="https://www.youtube.com/watch?v=v1CmGbOGb2I">https://www.youtube.com/watch?v=v1CmGbOGb2I</a>
+</li>
+
+<li>Try OCaml<br />
+<a href="https://try.ocaml.pro/">https://try.ocaml.pro/</a>
+</li>
+
+<li>CSE 341: Functions and patterns<br />
+<a href="https://courses.cs.washington.edu/courses/cse341/04wi/lectures/03-ml-functions.html">https://courses.cs.washington.edu/courses/cse341/04wi/lectures/03-ml-functions.html</a>
+</li>
+
+<li>Comparing Objective Caml and Standard ML<br />
+<a href="http://adam.chlipala.net/mlcomp/">http://adam.chlipala.net/mlcomp/</a>
+</li>
+
+<li>What are the key differences between Standard ML and OCaml?<br />
+<a href="https://www.quora.com/What-are-the-key-differences-between-Standard-ML-and-OCaml?share=1">https://www.quora.com/What-are-the-key-differences-between-Standard-ML-and-OCaml?share=1</a>
+</li>
+
+<li>Cheat Sheets (pro OCaml)<br />
+<a href="https://www.ocaml.org/docs/cheat_sheets.html">https://www.ocaml.org/docs/cheat_sheets.html</a>
+</li>
+
+<li>Think OCaml: How to Think Like a (Functional) Programmer<br />
+<a href="https://www.greenteapress.com/thinkocaml/thinkocaml.pdf">https://www.greenteapress.com/thinkocaml/thinkocaml.pdf</a>
+</li>
+
+<li>The OCaml Language Cheat Sheet<br />
+<a href="https://ocamlpro.github.io/ocaml-cheat-sheets/ocaml-lang.pdf">https://ocamlpro.github.io/ocaml-cheat-sheets/ocaml-lang.pdf</a>
+</li>
+
+<li>Syllabus (FAS CS51)<br />
+<a href="https://cs51.io/college/syllabus/">https://cs51.io/college/syllabus/</a>
+</li>
+
+<li>Abstraction and Design In Computation<br />
+<a href="http://book.cs51.io/">http://book.cs51.io/</a>
+</li>
+
+<li>Learn X in Y minutes Where X=Standard ML<br />
+<a href="https://learnxinyminutes.com/docs/standard-ml/">https://learnxinyminutes.com/docs/standard-ml/</a>
+</li>
+
+<li>CSE307 Online - Summer 2018: Principles of Programing Languages course<br />
+<a href="https://www3.cs.stonybrook.edu/~pfodor/courses/summer/cse307.html">https://www3.cs.stonybrook.edu/~pfodor/courses/summer/cse307.html</a>
+</li>
+
+<li>CSE307 Principles of Programming Languages course: SML part 1<br />
+<a href="https://www.youtube.com/watch?v=p1n0_PsM6hw">https://www.youtube.com/watch?v=p1n0_PsM6hw</a>
+</li>
+
+<li>CSE 307 &ndash; Principles of Programming Languages &ndash; SML<br />
+<a href="https://www3.cs.stonybrook.edu/~pfodor/courses/summer/CSE307/L01_SML.pdf">https://www3.cs.stonybrook.edu/~pfodor/courses/summer/CSE307/L01_SML.pdf</a>
+</li>
+
+<li>History of programming languages<br />
+<a href="https://devskiller.com/history-of-programming-languages/">https://devskiller.com/history-of-programming-languages/</a>
+</li>
+
+<li>History of programming languages (Wikipedia)<br />
+<a href="https://en.wikipedia.org/wiki/History_of_programming_languages">https://en.wikipedia.org/wiki/History_of_programming_languages</a>
+</li>
+
+<li>The Evolution Of Programming Languages<br />
+<a href="https://www.i-programmer.info/news/98-languages/8809-the-evolution-of-programming-languages.html">https://www.i-programmer.info/news/98-languages/8809-the-evolution-of-programming-languages.html</a>
+</li>
+
+<li>Evoluce programovacích jazyků<br />
+<a href="https://ccrma.stanford.edu/courses/250a-fall-2005/docs/ComputerLanguagesChart.png">https://ccrma.stanford.edu/courses/250a-fall-2005/docs/ComputerLanguagesChart.png</a>
+</li>
+
+<li>Currying<br />
+<a href="https://sw-samuraj.cz/2011/02/currying/">https://sw-samuraj.cz/2011/02/currying/</a>
+</li>
+
+<li>Currying (Wikipedia)<br />
+<a href="https://en.wikipedia.org/wiki/Currying">https://en.wikipedia.org/wiki/Currying</a>
+</li>
+
+<li>Currying (Haskell wiki)<br />
+<a href="https://wiki.haskell.org/Currying">https://wiki.haskell.org/Currying</a>
+</li>
+
+<li>Haskell Curry<br />
+<a href="https://en.wikipedia.org/wiki/Haskell_Curry">https://en.wikipedia.org/wiki/Haskell_Curry</a>
+</li>
+
+<li>Moses Schönfinkel<br />
+<a href="https://en.wikipedia.org/wiki/Moses_Sch%C3%B6nfinkel">https://en.wikipedia.org/wiki/Moses_Sch%C3%B6nfinkel</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 1)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-1-1f15e387e536">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-1-1f15e387e536</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 2)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-2-7005682cec4a">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-2-7005682cec4a</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 3)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-3-1b0fd14eb1a7">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-3-1b0fd14eb1a7</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 4)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-4-18fbe3ea9e49">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-4-18fbe3ea9e49</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 5)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-5-c70adc9cf56a">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-5-c70adc9cf56a</a>
+</li>
+
+<li>So You Want to be a Functional Programmer (Part 6)<br />
+<a href="https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-6-db502830403">https://cscalfani.medium.com/so-you-want-to-be-a-functional-programmer-part-6-db502830403</a>
+</li>
+
+<li>Python to OCaml: Retrospective<br />
+<a href="http://roscidus.com/blog/blog/2014/06/06/python-to-ocaml-retrospective/">http://roscidus.com/blog/blog/2014/06/06/python-to-ocaml-retrospective/</a>
+</li>
+
+<li>Why does Cambridge teach OCaml as the first programming language?<br />
+<a href="https://www.youtube.com/watch?v=6APBx0WsgeQ">https://www.youtube.com/watch?v=6APBx0WsgeQ</a>
+</li>
+
+<li>OCaml and 7 Things You Need To Know About It In 2021 | Functional Programming | Caml<br />
+<a href="https://www.youtube.com/watch?v=s0itOsgcf9Q">https://www.youtube.com/watch?v=s0itOsgcf9Q</a>
+</li>
+
+<li>OCaml 2021 - 25 years of OCaml<br />
+<a href="https://www.youtube.com/watch?v=-u_zKPXj6mw">https://www.youtube.com/watch?v=-u_zKPXj6mw</a>
+</li>
+
+<li>Introduction | OCaml Programming | Chapter 1 Video 1<br />
+<a href="https://www.youtube.com/watch?v=MUcka_SvhLw&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU">https://www.youtube.com/watch?v=MUcka_SvhLw&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU</a>
+</li>
+
+<li>Functional Programming - What | OCaml Programming | Chapter 1 Video 2<br />
+<a href="https://www.youtube.com/watch?v=JTEwC3HihFc&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=2">https://www.youtube.com/watch?v=JTEwC3HihFc&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=2</a>
+</li>
+
+<li>Functional Programming - Why Part 1 | OCaml Programming | Chapter 1 Video 3<br />
+<a href="https://www.youtube.com/watch?v=SKr3ItChPSI&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=3">https://www.youtube.com/watch?v=SKr3ItChPSI&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=3</a>
+</li>
+
+<li>Functional Programming - Why Part 2 | OCaml Programming | Chapter 1 Video 4<br />
+<a href="https://www.youtube.com/watch?v=eNLm5Xbgmd0&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=4">https://www.youtube.com/watch?v=eNLm5Xbgmd0&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=4</a>
+</li>
+
+<li>OCaml | OCaml Programming | Chapter 1 Video 5<br />
+<a href="https://www.youtube.com/watch?v=T-DIW1dhYzo&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=5">https://www.youtube.com/watch?v=T-DIW1dhYzo&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=5</a>
+</li>
+
+<li>Five Aspects of Learning a Programming Language | OCaml Programming | Chapter 2 Video 1<br />
+<a href="https://www.youtube.com/watch?v=A5IHFZtRfBs&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=6">https://www.youtube.com/watch?v=A5IHFZtRfBs&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=6</a>
+</li>
+
+<li>Expressions | OCaml Programming | Chapter 2 Video 2<br />
+<a href="https://www.youtube.com/watch?v=3fzrFY-2ZQ8&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=7">https://www.youtube.com/watch?v=3fzrFY-2ZQ8&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=7</a>
+</li>
+
+<li>If Expressions | OCaml Programming | Chapter 2 Video 3<br />
+<a href="https://www.youtube.com/watch?v=XJ6QPtlPD7s&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=8">https://www.youtube.com/watch?v=XJ6QPtlPD7s&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=8</a>
+</li>
+
+<li>Let Definitions | OCaml Programming | Chapter 2 Video 4<br />
+<a href="https://www.youtube.com/watch?v=eRnG4gwOTlI&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=10">https://www.youtube.com/watch?v=eRnG4gwOTlI&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=10</a>
+</li>
+
+<li>Let Expressions | OCaml Programming | Chapter 2 Video 5<br />
+<a href="https://www.youtube.com/watch?v=ug3L97FXC6A&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=10">https://www.youtube.com/watch?v=ug3L97FXC6A&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=10</a>
+</li>
+
+<li>Variable Expressions and Scope | OCaml Programming | Chapter 2 Video 6<br />
+<a href="https://www.youtube.com/watch?v=_TpTC6eo34M&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=11">https://www.youtube.com/watch?v=_TpTC6eo34M&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=11</a>
+</li>
+
+<li>Scope and the Toplevel | OCaml Programming | Chapter 2 Video 7<br />
+<a href="https://www.youtube.com/watch?v=4SqMkUwakEA&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=12">https://www.youtube.com/watch?v=4SqMkUwakEA&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=12</a>
+</li>
+
+<li>Anonymous Functions | OCaml Programming | Chapter 2 Video 8<br />
+<a href="https://www.youtube.com/watch?v=JwoIIrj0bcM&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=13">https://www.youtube.com/watch?v=JwoIIrj0bcM&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=13</a>
+</li>
+
+<li>Lambdas | OCaml Programming | Chapter 2 Video 9<br />
+<a href="https://www.youtube.com/watch?v=zHHCD7MOjmw&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=15">https://www.youtube.com/watch?v=zHHCD7MOjmw&amp;list=PLre5AT9JnKShBOPeuiD9b-I4XROIJhkIU&amp;index=15</a>
+</li>
+
+</ol>
+
+
+
+<p></p><p></p>
+<p><small>Autor: <a href="http://www.fit.vutbr.cz/~tisnovpa">Pavel Tišnovský</a> &nbsp; 2023</small></p>
+</body>
+</html>
+
