@@ -71,3 +71,9 @@ to_rgb g2;;
 
 let rgb1 = RGB(0, 10, 20);;
 to_rgb rgb1;;
+
+let rgb2 = RGB(0, 0, 255);;
+to_rgb rgb2;;
+
+let rgb3 = RGB(255, 255, 255);;
+to_rgb rgb3;;
