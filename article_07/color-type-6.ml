@@ -13,7 +13,7 @@ type basic_color =
 type color =
   | BasicColor of basic_color
   | Gray of int
-  | RGB  of int * int * int
+  | RGB of int * int * int
 ;;
 
 

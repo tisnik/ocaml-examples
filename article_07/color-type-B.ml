@@ -62,7 +62,7 @@ type color =
   | Gray of int
   | RGB of int * int * int
   | HSV of float * float * float
-  | Mix of float * color * color;;
+  | Mix of float * color * color
 ;;
 
 
@@ -74,7 +74,7 @@ let basic_color_to_rgb = function
   | Blue -> (0, 0, 255)
   | Magenta -> (255, 0, 255)
   | Cyan -> (0, 255, 255)
-  | White -> (255, 255, 255);;
+  | White -> (255, 255, 255)
 ;;
 
 
@@ -120,7 +120,6 @@ to_rgb c3;;
 
 let c4 = BasicColor(Red, Bright);;
 to_rgb c4;;
-
 
 let g1 = Gray(0);;
 to_rgb g1;;

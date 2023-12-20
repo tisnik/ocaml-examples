@@ -24,7 +24,8 @@ let basic_color_to_rgb = function
   | Blue -> (0, 0, 255)
   | Magenta -> (255, 0, 255)
   | Cyan -> (0, 255, 255)
-  | White -> (255, 255, 255);;
+  | White -> (255, 255, 255)
+;;
 
 
 let to_rgb c =
