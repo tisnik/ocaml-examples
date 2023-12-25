@@ -8,3 +8,4 @@ Articles about OCaml programming language.
 1. [Datové typy Option, Result a Array](ocaml_4.htm)
 1. [Operátory](ocaml_5.htm)
 1. [Definice uživatelských datových typů](ocaml_6.htm)
+1. [Rekurzivní datové typy v jazyku OCaml](ocaml_7.htm)
