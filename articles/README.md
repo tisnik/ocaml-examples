@@ -9,3 +9,4 @@ Articles about OCaml programming language.
 1. [Operátory](ocaml_5.htm)
 1. [Definice uživatelských datových typů](ocaml_6.htm)
 1. [Rekurzivní datové typy v jazyku OCaml](ocaml_7.htm)
+1. [Řídicí konstrukce v programovacím jazyku OCaml](ocaml_8.htm)
